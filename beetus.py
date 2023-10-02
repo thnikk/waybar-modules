@@ -32,6 +32,9 @@ h = { "api-secret": config['settings']['api_secret']}
 try:
     # Get response as json
     data = requests.get("http://{}:{}/sgv.json".format(config['settings']['ip'],config['settings']['port']), headers=h, timeout=3).json()
+    # Write to cache file
+    with open(cache_file) as cache:
+        cache.write(json.dumps(data, indent=4))
 except:
     # If there's an issue, use the cache file
     cache_file = os.path.expanduser("~/.cache/beetus.json")
