@@ -29,6 +29,7 @@ if not config['settings']['api_secret'] or not config['settings']['api_secret'] 
 
 # Build header for http request with api key
 h = { "api-secret": config['settings']['api_secret']}
+cache_file = os.path.expanduser("~/.cache/beetus.json")
 try:
     # Get response as json
     data = requests.get("http://{}:{}/sgv.json".format(config['settings']['ip'],config['settings']['port']), headers=h, timeout=3).json()
@@ -37,7 +38,6 @@ try:
         cache.write(json.dumps(data, indent=4))
 except:
     # If there's an issue, use the cache file
-    cache_file = os.path.expanduser("~/.cache/beetus.json")
     with open(cache_file) as cache:
         data = json.load(cache)
 
