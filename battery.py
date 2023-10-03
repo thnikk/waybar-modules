@@ -10,8 +10,8 @@ import argparse
 device_path = "/sys/class/power_supply"
 
 # Parse arguments for device
-parser = argparse.ArgumentParser(description="VM Volume")
-parser.add_argument('text', action='store', type=str, help='Part of device name to search for')
+parser = argparse.ArgumentParser(description="Combined battery module")
+parser.add_argument('name', action='store', type=str, help='Part of device name to search for')
 args = parser.parse_args()
 
 # Combined levels and capacities
@@ -28,7 +28,7 @@ def get_percentage(now, full):
 # Iterate through all power supply devices
 for device in os.listdir(device_path):
     # If the device is supplied as an argument
-    if args.text[0] in device:
+    if args.name[0] in device:
         # Get values
         device_full = int(open(device_path + "/" + device + "/energy_full").read())
         device_now = int(open(device_path + "/" + device + "/energy_now").read())
