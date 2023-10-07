@@ -26,6 +26,8 @@ for manager,packages in package_managers.items():
     # Only display package manager name if there are any new packages
     if len(packages) > 0: 
         tooltip += "<span color='#8fa1be' font_size='16pt'>" + manager + "</span>\n"
+    # Count number of packages
+    pkg_count = 0
     # Iterate through packages
     for package in packages:
         # Break up package info into parts
@@ -46,6 +48,14 @@ for manager,packages in package_managers.items():
             version = ""
         # Format the rest to be pretty
         tooltip += parts[0] + " <span color='#a3be8c'>" + version + "</span>\n"
+
+        # Increase package count
+        count+=1
+        # Break out of loop if more than 50 packages
+        if count > 50:
+            # Say there are more that aren't included in the list
+            tooltip += "{} more...\n".format(len(packages) - 50)
+            break
     if len(packages) > 0: 
         tooltip += "\n"
 
