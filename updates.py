@@ -50,11 +50,11 @@ for manager,packages in package_managers.items():
         tooltip += parts[0] + " <span color='#a3be8c'>" + version + "</span>\n"
 
         # Increase package count
-        count+=1
+        pkg_count+=1
         # Break out of loop if more than 50 packages
-        if count > 50:
+        if pkg_count > 50:
             # Say there are more that aren't included in the list
-            tooltip += "{} more...\n".format(len(packages) - 50)
+            tooltip += "{} more...\n".format(len(packages) - pkg_count)
             break
     if len(packages) > 0: 
         tooltip += "\n"
