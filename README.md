@@ -7,6 +7,16 @@ Some modules depend on a shell program to function:
 - updates.py: checkupdates, paru
 - ups.py: powerpanel
 
+## Signals
+Waybar allows you to use signals to reload a module. This can help reduce unnecessary load on your system for modules that don't need to poll. A good example is the VM module, that can be updated through libvirt's qemu hook file. In this example, you'd add `pkill -RTMIN+1 waybar` to the hooks file. Other changes are required in the module config, which are:
+
+```
+"interval": "once",
+"signal": 1
+```
+
+The values for RTMIN+1 and signal need to match.
+
 ## Useful libraries
 
 If you want to make your own custom module, here are some useful libraries.
