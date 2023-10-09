@@ -38,6 +38,9 @@ for manager,packages in package_managers.items():
         # Add spaces up to 20th character
         if len(parts[0]) < 20:
             parts[0] = parts[0] + (" " * (20 - len(parts[0])))
+        # Shorten version number if it's too long
+        if len(parts[3]) > 10:
+            parts[3] = parts[3][:7] + "..."
         # Mark the package if it's in the alert list
         if parts[0] in alert_list:
             parts[0] = "<span color='#bf616a'>" + parts[0] + "</span>"
