@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-# Waybar module that shows pacman+aur updates.
-# Requires pacman-contrib and paru
+# Shows number of pacman, aur, and flatpak updates and lists updates in tooltip.
+# Requires pacman-contrib, paru, and flatpak for respective functionality.
 import subprocess
 import json
 import sys
@@ -16,7 +16,7 @@ package_managers = {
 }
 
 # Get number of updates
-num_updates = len(package_managers["Pacman"]) + len(package_managers["AUR"])
+num_updates = sum(len(v) for v in package_managers.values()) 
 
 # Create an empty variable for updates tooltip
 tooltip = ""
@@ -29,29 +29,30 @@ for manager,packages in package_managers.items():
     # Count number of packages
     pkg_count = 0
     # Iterate through packages
-    for package in packages:
+    for package_string in packages:
         # Break up package info into parts
-        parts = package.split()
-        # Shorten name if longer than 19 characters
-        if len(parts[0]) > 19:
-            parts[0] = parts[0][:11] + "..." + parts[0][len(parts[0]) - 5:]
-        # Add spaces up to 20th character
-        if len(parts[0]) < 20:
-            parts[0] = parts[0] + (" " * (20 - len(parts[0])))
-        # Shorten version number if it's too long
-        if len(parts[3]) > 10:
-            parts[3] = parts[3][:7] + "..."
-        # Mark the package if it's in the alert list
-        if parts[0] in alert_list:
-            parts[0] = "<span color='#bf616a'>" + parts[0] + "</span>"
-        # Don't add version numbers for flatpak
-        if manager != "Flatpak":
-            version = parts[3]
+        if manager == "Flatpak":
+            parts = package_string.split("\t")
+            package = parts[0]
+            version = parts[2]
         else:
-            version = ""
+            parts = package_string.split()
+            package = parts[0]
+            version = parts[3]
+        # Shorten name if longer than 19 characters
+        if len(package) > 19:
+            package = package[:11] + "..." + package[len(package) - 5:]
+        # Add spaces up to 20th character
+        if len(package) < 20:
+            package = package + (" " * (20 - len(package)))
+        # Shorten version number if it's too long
+        if len(version) > 10:
+            version = version[:7] + "..."
+        # Mark the package if it's in the alert list
+        if package in alert_list:
+            package = "<span color='#bf616a'>" + package + "</span>"
         # Format the rest to be pretty
-        tooltip += parts[0] + " <span color='#a3be8c'>" + version + "</span>\n"
-
+        tooltip += package + " <span color='#a3be8c'>" + version + "</span>\n"
         # Increase package count
         pkg_count+=1
         # Break out of loop if more than 50 packages
