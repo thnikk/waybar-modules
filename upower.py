@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import json
-import jc 
+import jc
 import subprocess
 
 # Get upower output through subprocess
@@ -14,7 +14,7 @@ device_icons = {
     "headphones": "",
 }
 
-battery_icons = [ "","","","","" ]
+battery_icons = ["", "", "", "", ""]
 battery_icon = ""
 
 out_dict = {
@@ -32,7 +32,8 @@ for device in upower_json:
             # Get the type of device
             name = device['detail']['type']
             # Only pull percentage up to . or % (first 2 digits)
-            percent = int(str(device['detail']['percentage']).split('.', 1)[0].split('%', 1)[0])
+            percent = int(str(device['detail']['percentage']
+                              ).split('.', 1)[0].split('%', 1)[0])
 
             # Get battery
             if percent >= 100:
@@ -47,8 +48,10 @@ for device in upower_json:
                 battery_icon = "<span color=\"#bf616a\"></span>"
 
             out_dict["text"] = battery_icon
-            out_dict["alt"] = out_dict["alt"] + device_icons[name] + " " + battery_icon + " "
-            out_dict["tooltip"] = out_dict["tooltip"] + name + " " + str(percent) + "\n"
+            out_dict["alt"] = out_dict["alt"] + \
+                device_icons[name] + " " + battery_icon + " "
+            out_dict["tooltip"] = out_dict["tooltip"] + \
+                name + " " + str(percent) + "\n"
 
 # Remove trailing delimeters
 if out_dict["text"].endswith(" "):
@@ -60,5 +63,3 @@ if out_dict["tooltip"].endswith("\n"):
 
 
 print(json.dumps(out_dict))
-            
-                

@@ -3,8 +3,9 @@
 import glob
 import json
 
-# Get domains
-domains = [domain_path.split("/")[-1:][0].rstrip(".xml") for domain_path in glob.glob("/var/run/libvirt/qemu/*.xml")]
+# Get domains with list comprehension
+domains = [domain_path.split("/")[-1:][0].rstrip(".xml")
+           for domain_path in glob.glob("/var/run/libvirt/qemu/*.xml")]
 
 # Make tooltip
 if len(domains) > 0:
