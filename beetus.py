@@ -56,13 +56,13 @@ since_last = int((now - date).total_seconds() / 60)
 
 # Dictionary lookup for arrow icons
 arrows = {
-  "DoubleUp": "↑↑",
-  "SingleUp": "↑",
-  "FortyFiveUp": "↗️",
-  "Flat": "→",
-  "FortyFiveDown": "↘️",
-  "SingleDown": "↓",
-  "DoubleDown": "↓↓"
+    "DoubleUp": "↑↑",
+    "SingleUp": "↑",
+    "FortyFiveUp": "↗️",
+    "Flat": "→",
+    "FortyFiveDown": "↘️",
+    "SingleDown": "↓",
+    "DoubleDown": "↓↓"
 }
 
 # Main output dictionary
