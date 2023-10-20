@@ -4,22 +4,28 @@
 # Requires pacman-contrib, paru, and flatpak for respective functionality.
 import subprocess
 import json
+import concurrent.futures
+
+pool = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
 # Visually differentiate matching packages
 alert_list = ["linux", "linux-lts", "libvirt", "qemu", "discord"]
 
 # Get updates for pacman and aur
-package_managers = {
-    "Pacman": subprocess.run(
-        ["checkupdates"], check=False, capture_output=True
-        ).stdout.decode('utf-8').splitlines(),
-    "AUR": subprocess.run(
-        ["paru", "-Qum"], check=False, capture_output=True
-        ).stdout.decode('utf-8').splitlines(),
-    "Flatpak": subprocess.run(
-        ["flatpak", "remote-ls", "--updates"], check=False, capture_output=True
-        ).stdout.decode('utf-8').splitlines()
-}
+package_managers = {"Pacman": [], "AUR": [], "Flatpak": []}
+
+
+def get_updates(manager, command):
+    package_managers[manager] = subprocess.run(
+            command, check=False, capture_output=True
+            ).stdout.decode('utf-8').splitlines()
+
+
+# Get updates in parallel
+pool.submit(get_updates, "Pacman", ["checkupdates"])
+pool.submit(get_updates, "AUR", ["paru", "-Qum"])
+pool.submit(get_updates, "Flatpak", ["flatpak", "remote-ls", "--updates"])
+pool.shutdown(wait=True)
 
 # Get number of updates
 num_updates = sum(len(v) for v in package_managers.values())
@@ -62,8 +68,8 @@ for manager, packages in package_managers.items():
         tooltip += package + " <span color='#a3be8c'>" + version + "</span>\n"
         # Increase package count
         pkg_count += 1
-        # Break out of loop if more than 50 packages
-        if pkg_count > 50:
+        # Break out of loop if more than 30 packages
+        if pkg_count > 30:
             # Say there are more that aren't included in the list
             tooltip += "{} more...\n".format(len(packages) - pkg_count)
             break
