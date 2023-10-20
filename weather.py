@@ -61,32 +61,31 @@ hour = int(now.strftime('%H'))
 date = now.strftime('%Y-%m-%d')
 
 
-# Take url and path for cache file, update cache, and return json data
-def updateCache(url, file):
-    data = requests.get(url).json()
-    with open(file, "w") as cache:
-        cache.write(json.dumps(data, indent=4))
+def updateCache(url, file, today):
+    try:
+        # Get the modify date of the file
+        date_modified = datetime.fromtimestamp(
+            os.path.getmtime(file)).strftime('%Y-%m-%d')
+    except FileNotFoundError:
+        pass
+    # Check if the file exists and if the date modified is today
+    if os.path.exists(file) and (date == date_modified or today is False):
+        with open(file) as cache:
+            data = json.load(cache)
+    else:
+        data = requests.get(url).json()
+        with open(file, "w") as cache:
+            cache.write(json.dumps(data, indent=4))
     return data
 
 
 # Get latitude and longitude for given zip code
 geocode_file = os.path.expanduser("~/.cache/geocode.json")
-# Try to open the geocode cache file
-try:
-    with open(geocode_file) as cache:
-        geocode = json.load(cache)
-    # If the zip code in the cache file doesn't match the config, refetch data
-    if geocode["results"][0]["postcodes"][0] != postal_code:
-        geocode = updateCache(
-                "https://geocoding-api.open-meteo.com/v1/search?name="
-                "{}&count=1&language=en&format=json".format(postal_code),
-                geocode_file)
-except (json.decoder.JSONDecodeError, KeyError):
-    # If something fails, fetch the data again
-    geocode = updateCache(
-            "https://geocoding-api.open-meteo.com/v1/search?name={}"
-            "&count=1&language=en&format=json".format(postal_code),
-            geocode_file)
+geocode_url = (
+    "https://geocoding-api.open-meteo.com/v1/search?name="
+    "{}&count=1&language=en&format=json").format(postal_code)
+
+geocode = updateCache(geocode_url, geocode_file, False)
 
 lat = str(geocode["results"][0]['latitude'])
 lon = str(geocode["results"][0]['longitude'])
@@ -95,31 +94,23 @@ city = geocode["results"][0]['name']
 
 # Get weather data
 weather_file = os.path.expanduser("~/.cache/weather.json")
-weather = updateCache(
-        "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}"
-        "&hourly=temperature_2m,relativehumidity_2m,weathercode,windspeed_10m,"
-        "winddirection_10m&daily=weathercode,temperature_2m_max,"
-        "temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit"
-        "&timezone={}".format(lat, lon, tz), weather_file)
+weather_url = (
+    "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}"
+    "&hourly=temperature_2m,relativehumidity_2m,weathercode,windspeed_10m,"
+    "winddirection_10m&daily=weathercode,temperature_2m_max,"
+    "temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit"
+    "&timezone={}").format(lat, lon, tz)
+
+weather = updateCache(weather_url, weather_file, True)
 
 # Get AQI if new day
 pollution_file = os.path.expanduser("~/.cache/pollution.json")
-if os.path.exists(pollution_file):
-    date_modified = datetime.fromtimestamp(
-            os.path.getmtime(pollution_file)).strftime('%Y-%m-%d')
-    if date == date_modified:
-        with open(pollution_file) as cache:
-            pollution = json.load(cache)
-    else:
-        pollution = updateCache(
-            "https://air-quality-api.open-meteo.com/v1/air-quality?"
-            "latitude={}&longitude={}&hourly=us_aqi"
-            "&timezone={}".format(lat, lon, tz), pollution_file)
-else:
-    pollution = updateCache(
-        "https://air-quality-api.open-meteo.com/v1/air-quality?"
-        "latitude={}&longitude={}&hourly=us_aqi"
-        "&timezone={}".format(lat, lon, tz), pollution_file)
+pollution_url = (
+    "https://air-quality-api.open-meteo.com/v1/air-quality?"
+    "latitude={}&longitude={}&hourly=us_aqi"
+    "&timezone={}").format(lat, lon, tz)
+
+pollution = updateCache(pollution_url, pollution_file, True)
 
 # Print header for daily weather
 tooltip = "<span color='#8fa1be' font_size='16pt'>Today</span>\n"
@@ -180,7 +171,7 @@ for x in range(7):
     temp_min = str(int(weather["daily"]["temperature_2m_min"][x]))
     # Add formatted line to tooltip
     tooltip += "{}: {}/{} {}\n".format(
-            dow[:2], temp_max, temp_min, weather_lookup[code][1])
+        dow[:2], temp_max, temp_min, weather_lookup[code][1])
 
 # Get boolean from config if exists, otherwise enable night icons
 try:
