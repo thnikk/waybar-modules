@@ -197,7 +197,7 @@ except (KeyError, configparser.NoOptionError):
     night_icons = 1
 if night_icons == 1:
     # Change icon if night time
-    if hour < sunrise or hour > sunset:
+    if int(hour) < sunrise or int(hour) > sunset:
         weather_lookup["0"][0] = ""
 
 # Print data formatted for waybar
