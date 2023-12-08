@@ -166,11 +166,11 @@ try:
         tooltip += "\n<span color='#8fa1be' font_size='16pt'>Hourly forecast</span>\n"
         current_hour = now.strftime("%Y-%m-%dT%H:00")
         current_hour_index = weather["hourly"]["time"].index(current_hour)
-        for i in range(current_hour_index, current_hour_index + hourly_hours):
+        for i in range(current_hour_index + 1, current_hour_index + hourly_hours + 1):
             hour = datetime.strptime(weather["hourly"]["time"][i], "%Y-%m-%dT%H:%M")
             tooltip += "{}: {} {}\n".format(
                 hour.strftime("%l%P"),
-                weather["hourly"]["temperature_2m"][i],
+                int(weather["hourly"]["temperature_2m"][i]),
                 weather_lookup[str(weather["hourly"]["weathercode"][i])][1],
                 )
 except KeyError:
