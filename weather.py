@@ -167,9 +167,9 @@ try:
         current_hour = now.strftime("%Y-%m-%dT%H:00")
         current_hour_index = weather["hourly"]["time"].index(current_hour)
         for i in range(current_hour_index + 1, current_hour_index + hourly_hours + 1):
-            hour = datetime.strptime(weather["hourly"]["time"][i], "%Y-%m-%dT%H:%M")
+            hourly_hour = datetime.strptime(weather["hourly"]["time"][i], "%Y-%m-%dT%H:%M")
             tooltip += "{}: {} {}\n".format(
-                hour.strftime("%l%P"),
+                hourly_hour.strftime("%l%P"),
                 int(weather["hourly"]["temperature_2m"][i]),
                 weather_lookup[str(weather["hourly"]["weathercode"][i])][1],
                 )
@@ -196,8 +196,9 @@ try:
 except (KeyError, configparser.NoOptionError):
     night_icons = 1
 if night_icons == 1:
+    night_hour = now.strftime("%-H")
     # Change icon if night time
-    if int(hour) < sunrise or int(hour) > sunset:
+    if int(night_hour) < sunrise or int(night_hour) > sunset:
         weather_lookup["0"][0] = ""
 
 # Print data formatted for waybar
