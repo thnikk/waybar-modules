@@ -10,7 +10,7 @@ config_file = os.path.expanduser("~/.config/weather.ini")
 # Check for config file and create one if it doesn't exist
 if not os.path.exists(config_file):
     f = open(config_file, "a")
-    f.write("[settings]\nzip = ")
+    f.write("[settings]\nzip = \nnight_icons = true\nhourly_hours = ")
     f.close()
 
 # Get config file
@@ -158,6 +158,23 @@ tooltip += "Temperature: {}°F\n".format(temp_now)
 tooltip += "Humidity: {}%\n".format(humidity_now)
 tooltip += "Wind: {}mph {}\n".format(windspeed_now, winddirection_now)
 tooltip += "Air quality: {}\n".format(quality)
+
+# Next n hours
+try:
+    hourly_hours = int(config["settings"]["hourly_hours"])
+    if hourly_hours > 0:
+        tooltip += "\n<span color='#8fa1be' font_size='16pt'>Hourly forecast</span>\n"
+        current_hour = now.strftime("%Y-%m-%dT%H:00")
+        current_hour_index = weather["hourly"]["time"].index(current_hour)
+        for i in range(current_hour_index, current_hour_index + hourly_hours):
+            hour = datetime.strptime(weather["hourly"]["time"][i], "%Y-%m-%dT%H:%M")
+            tooltip += "{}: {} {}\n".format(
+                hour.strftime("%l%P"),
+                weather["hourly"]["temperature_2m"][i],
+                weather_lookup[str(weather["hourly"]["weathercode"][i])][1],
+                )
+except KeyError:
+    tooltip += "\n<span color='#bf616a'>Please set hourly_hours\nin ~/.config/weather.ini</span>\n"
 
 # Print header for weekly forecast
 tooltip += "\n<span color='#8fa1be' font_size='16pt'>7 day forecast</span>\n"
