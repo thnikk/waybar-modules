@@ -135,9 +135,14 @@ sunrise = int(datetime.strptime(
     weather["daily"]["sunrise"][0], "%Y-%m-%dT%H:%M").strftime("%H"))
 sunset = int(datetime.strptime(
     weather["daily"]["sunset"][0], "%Y-%m-%dT%H:%M").strftime("%H"))
-aqi = int(pollution["hourly"]["us_aqi"][hour])
+try:
+    aqi = int(pollution["hourly"]["us_aqi"][hour])
+except TypeError:
+    aqi = -1
 
 # Air quality
+if aqi == -1:
+    quality = "Unknown"
 if aqi <= 50:
     quality = "Good"
 elif aqi <= 100:
