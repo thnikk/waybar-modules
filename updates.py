@@ -1,7 +1,10 @@
 #!/usr/bin/python3
-# Shows number of pacman, aur, and flatpak updates.
-# Individual updates are listed in the tooltip (truncated at 50).
-# Requires pacman-contrib, paru, and flatpak for respective functionality.
+"""
+Shows number of pacman, aur, and flatpak updates.
+Individual updates are listed in the tooltip (truncated at 50).
+Requires pacman-contrib, paru, and flatpak for respective functionality.
+Author: thnikk
+"""
 import subprocess
 import json
 import concurrent.futures
@@ -15,8 +18,9 @@ alert_list = ["linux", "linux-lts", "libvirt", "qemu", "discord"]
 package_managers = {"Pacman": [], "AUR": [], "Flatpak": []}
 
 
-def get_updates(manager, command):
-    package_managers[manager] = subprocess.run(
+def get_updates(man, command):
+    """ Get output of subprocess and split lines into list """
+    package_managers[man] = subprocess.run(
             command, check=False, capture_output=True
             ).stdout.decode('utf-8').splitlines()
 
@@ -31,16 +35,15 @@ pool.shutdown(wait=True)
 num_updates = sum(len(v) for v in package_managers.values())
 
 # Create an empty variable for updates tooltip
-tooltip = ""
+TOOLTIP = ""
 
 # Iterate through package managers
 for manager, packages in package_managers.items():
     # Only display package manager name if there are any new packages
     if len(packages) > 0:
-        tooltip += ("<span color='#8fa1be' font_size='16pt'>{}</span>\n"
-                    ).format(manager)
+        TOOLTIP += f"<span color='#8fa1be' font_size='16pt'>{manager}</span>\n"
     # Count number of packages
-    pkg_count = 0
+    PKG_COUNT = 0
     # Iterate through packages
     for package_string in packages:
         # Break up package info into parts
@@ -65,19 +68,19 @@ for manager, packages in package_managers.items():
         if package in alert_list:
             package = "<span color='#bf616a'>" + package + "</span>"
         # Format the rest to be pretty
-        tooltip += package + " <span color='#a3be8c'>" + version + "</span>\n"
+        TOOLTIP += package + " <span color='#a3be8c'>" + version + "</span>\n"
         # Increase package count
-        pkg_count += 1
+        PKG_COUNT += 1
         # Break out of loop if more than 30 packages
-        if pkg_count > 30:
+        if PKG_COUNT > 30:
             # Say there are more that aren't included in the list
-            tooltip += "{} more...\n".format(len(packages) - pkg_count)
+            TOOLTIP += f"{len(packages) - PKG_COUNT} more...\n"
             break
     if len(packages) > 0:
-        tooltip += "\n"
+        TOOLTIP += "\n"
 
-if not tooltip:
-    tooltip = "<span font_size='16pt'>No updates</span>"
+if not TOOLTIP:
+    TOOLTIP = "<span font_size='16pt'>No updates</span>"
 
 # Print formatted json
-print(json.dumps({"text": num_updates, "tooltip": tooltip.rstrip()}))
+print(json.dumps({"text": num_updates, "tooltip": TOOLTIP.rstrip()}))
