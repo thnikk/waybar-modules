@@ -1,7 +1,11 @@
 #!/usr/bin/python3
+"""
+Upower module for battery info
+Author: thnikk
+"""
 import json
-import jc
 import subprocess
+import jc
 
 # Get upower output through subprocess
 upower_output = subprocess.check_output(['upower', '-d'], text=True)
@@ -14,8 +18,7 @@ device_icons = {
     "headphones": "",
 }
 
-battery_icons = ["", "", "", "", ""]
-battery_icon = ""
+battery_icons = ["<span color=\"#bf616a\"></span>", "", "", "", ""]
 
 out_dict = {
     "text": "",
@@ -35,17 +38,7 @@ for device in upower_json:
             percent = int(str(device['detail']['percentage']
                               ).split('.', 1)[0].split('%', 1)[0])
 
-            # Get battery
-            if percent >= 100:
-                battery_icon = ""
-            elif percent >= 75:
-                battery_icon = ""
-            elif percent >= 50:
-                battery_icon = ""
-            elif percent >= 25:
-                battery_icon = ""
-            else:
-                battery_icon = "<span color=\"#bf616a\"></span>"
+            battery_icon = battery_icons[percent // 25]
 
             out_dict["text"] = battery_icon
             out_dict["alt"] = out_dict["alt"] + \
