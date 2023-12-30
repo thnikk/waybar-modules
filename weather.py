@@ -1,17 +1,18 @@
 #!/usr/bin/python3
-# Weather module for waybar using open-meteo
-import requests
+""" Weather module for waybar using open-meteo """
 import json
 from datetime import datetime
 import os.path
 import configparser
+import sys
+import requests
 
 config_file = os.path.expanduser("~/.config/weather.ini")
 # Check for config file and create one if it doesn't exist
 if not os.path.exists(config_file):
-    f = open(config_file, "a")
-    f.write("[settings]\nzip = \nnight_icons = true\nhourly_hours = ")
-    f.close()
+    with open(config_file, "a", encoding='utf-8') as f:
+        f.write("[settings]\nzip = \nnight_icons = true\nhourly_hours = ")
+        f.close()
 
 # Get config file
 config = configparser.ConfigParser()
@@ -21,7 +22,7 @@ config.read(config_file)
 postal_code = config["settings"]["zip"]
 if not postal_code:
     print(json.dumps({"text": "Set zip code in ~/.config/weather.ini"}))
-    exit()
+    sys.exit(1)
 
 # Icon and text for weather codes
 weather_lookup = {
@@ -61,7 +62,8 @@ hour = int(now.strftime('%H'))
 date = now.strftime('%Y-%m-%d')
 
 
-def updateCache(url, file, today):
+def update_cache(url, file, today):
+    """ Update cache file with json reponse from request """
     try:
         # Get the modify date of the file
         date_modified = datetime.fromtimestamp(
@@ -70,11 +72,11 @@ def updateCache(url, file, today):
         pass
     # Check if the file exists and if the date modified is today
     if os.path.exists(file) and (date == date_modified or today is False):
-        with open(file) as cache:
+        with open(file, encoding='utf-8') as cache:
             data = json.load(cache)
     else:
-        data = requests.get(url).json()
-        with open(file, "w") as cache:
+        data = requests.get(url, timeout=5).json()
+        with open(file, "w", encoding='utf-8') as cache:
             cache.write(json.dumps(data, indent=4))
     return data
 
@@ -83,41 +85,41 @@ def updateCache(url, file, today):
 geocode_file = os.path.expanduser("~/.cache/geocode.json")
 geocode_url = (
     "https://geocoding-api.open-meteo.com/v1/search?name="
-    "{}&count=1&language=en&format=json").format(postal_code)
+    f"{postal_code}&count=1&language=en&format=json")
 
-geocode = updateCache(geocode_url, geocode_file, False)
+geocode = update_cache(geocode_url, geocode_file, False)
 
-lat = str(geocode["results"][0]['latitude'])
-lon = str(geocode["results"][0]['longitude'])
+LAT = str(geocode["results"][0]['latitude'])
+LON = str(geocode["results"][0]['longitude'])
 tz = geocode["results"][0]['timezone']
 city = geocode["results"][0]['name']
 
 # Get weather data
 weather_file = os.path.expanduser("~/.cache/weather.json")
 weather_url = (
-    "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}"
+    f"https://api.open-meteo.com/v1/forecast?latitude={LAT}&longitude={LON}"
     "&hourly=temperature_2m,relativehumidity_2m,weathercode,windspeed_10m,"
     "winddirection_10m&daily=weathercode,temperature_2m_max,"
     "temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit"
-    "&timezone={}").format(lat, lon, tz)
+    f"&timezone={tz}")
 
-weather = updateCache(weather_url, weather_file, True)
+weather = update_cache(weather_url, weather_file, True)
 
 # Get AQI if new day
 pollution_file = os.path.expanduser("~/.cache/pollution.json")
 pollution_url = (
     "https://air-quality-api.open-meteo.com/v1/air-quality?"
-    "latitude={}&longitude={}&hourly=us_aqi"
-    "&timezone={}").format(lat, lon, tz)
+    f"latitude={LAT}&longitude={LON}&hourly=us_aqi"
+    f"&timezone={tz}")
 
-pollution = updateCache(pollution_url, pollution_file, True)
+pollution = update_cache(pollution_url, pollution_file, True)
 
 # Print header for daily weather
-tooltip = "<span color='#8fa1be' font_size='16pt'>Today</span>\n"
+TOOLTIP = "<span color='#8fa1be' font_size='16pt'>Today</span>\n"
 
 
-# Convert degrees to cardinal direction
-def degToCompass(num):
+def deg_to_card(num):
+    """ Convert degrees to cardinal direction """
     val = int((num/22.5)+.5)
     arr = ["N", "NNE", "NE", "ENE", "E", "ESE",  "SE",  "SSE",
            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
@@ -126,86 +128,91 @@ def degToCompass(num):
 
 # Get data for current hour
 time_now = weather["hourly"]["time"][hour]
-code_now = str(weather["hourly"]["weathercode"][hour])
-temp_now = str(int(weather["hourly"]["temperature_2m"][hour]))
-humidity_now = str(weather["hourly"]["relativehumidity_2m"][hour])
-windspeed_now = str(weather["hourly"]["windspeed_10m"][hour])
-winddirection_now = degToCompass(weather["hourly"]["winddirection_10m"][hour])
+CODE_NOW = str(weather["hourly"]["weathercode"][hour])
+TEMP_NOW = str(int(weather["hourly"]["temperature_2m"][hour]))
+HUMIDITY_NOW = str(weather["hourly"]["relativehumidity_2m"][hour])
+WINDSPEED_NOW = str(weather["hourly"]["windspeed_10m"][hour])
+winddirection_now = deg_to_card(weather["hourly"]["winddirection_10m"][hour])
 sunrise = int(datetime.strptime(
     weather["daily"]["sunrise"][0], "%Y-%m-%dT%H:%M").strftime("%H"))
 sunset = int(datetime.strptime(
     weather["daily"]["sunset"][0], "%Y-%m-%dT%H:%M").strftime("%H"))
 try:
-    aqi = int(pollution["hourly"]["us_aqi"][hour])
+    AQI = int(pollution["hourly"]["us_aqi"][hour])
 except TypeError:
-    aqi = -1
+    AQI = -1
 
 # Air quality
-if aqi == -1:
-    quality = "Unknown"
-if aqi <= 50:
-    quality = "Good"
-elif aqi <= 100:
-    quality = "Moderate"
-elif aqi <= 150:
-    quality = "Unhealty"
-elif aqi <= 200:
-    quality = "Unhealthy"
-elif aqi <= 300:
-    quality = "Very unhealthy"
-elif aqi <= 500:
-    quality = "Hazardous"
+if AQI == -1:
+    QUALITY = "Unknown"
+if AQI <= 50:
+    QUALITY = "Good"
+elif AQI <= 100:
+    QUALITY = "Moderate"
+elif AQI <= 150:
+    QUALITY = "Unhealty"
+elif AQI <= 200:
+    QUALITY = "Unhealthy"
+elif AQI <= 300:
+    QUALITY = "Very unhealthy"
+elif AQI <= 500:
+    QUALITY = "Hazardous"
 
 # Add data to tooltip
-tooltip += "City: {}\n".format(city)
-tooltip += "Description: {}\n".format(weather_lookup[code_now][1])
-tooltip += "Temperature: {}°F\n".format(temp_now)
-tooltip += "Humidity: {}%\n".format(humidity_now)
-tooltip += "Wind: {}mph {}\n".format(windspeed_now, winddirection_now)
-tooltip += "Air quality: {}\n".format(quality)
+TOOLTIP += f"City: {city}\n"
+TOOLTIP += f"Description: {weather_lookup[CODE_NOW][1]}\n"
+TOOLTIP += f"Temperature: {TEMP_NOW}°F\n"
+TOOLTIP += f"Humidity: {HUMIDITY_NOW}%\n"
+TOOLTIP += f"Wind: {WINDSPEED_NOW}mph {winddirection_now}\n"
+TOOLTIP += f"Air quality: {QUALITY}\n"
 
 # Next n hours
 try:
     hourly_hours = int(config["settings"]["hourly_hours"])
     if hourly_hours > 0:
-        tooltip += "\n<span color='#8fa1be' font_size='16pt'>Hourly forecast</span>\n"
+        TOOLTIP += ("\n<span color='#8fa1be' font_size='16pt'>"
+                    "Hourly forecast</span>\n")
         current_hour = now.strftime("%Y-%m-%dT%H:00")
         current_hour_index = weather["hourly"]["time"].index(current_hour)
-        for i in range(current_hour_index + 1, current_hour_index + hourly_hours + 1):
-            hourly_hour = datetime.strptime(weather["hourly"]["time"][i], "%Y-%m-%dT%H:%M")
-            tooltip += "{}: {} {}\n".format(
-                hourly_hour.strftime("%l%P"),
-                int(weather["hourly"]["temperature_2m"][i]),
-                weather_lookup[str(weather["hourly"]["weathercode"][i])][1],
+        for i in range(current_hour_index + 1,
+                       current_hour_index + hourly_hours + 1):
+            hourly_hour = datetime.strptime(weather["hourly"]["time"][i],
+                                            "%Y-%m-%dT%H:%M")
+            WC = str(weather['hourly']['weathercode'][i])
+            TOOLTIP += (
+                f"{hourly_hour.strftime('%l%P')}: "
+                f"{int(weather['hourly']['temperature_2m'][i])} "
+                f"{weather_lookup[WC][1]}"
+                "\n"
                 )
 except KeyError:
-    tooltip += "\n<span color='#bf616a'>Please set hourly_hours\nin ~/.config/weather.ini</span>\n"
+    TOOLTIP += ("\n<span color='#bf616a'>Please set hourly_hours\n"
+                "in ~/.config/weather.ini</span>\n")
 
 # Print header for weekly forecast
-tooltip += "\n<span color='#8fa1be' font_size='16pt'>7 day forecast</span>\n"
+TOOLTIP += "\n<span color='#8fa1be' font_size='16pt'>7 day forecast</span>\n"
 
 # Split weekly data
 for x in range(7):
     date = datetime.strptime(weather["daily"]["time"][x], "%Y-%m-%d")
     dow = date.strftime("%A")
-    code = str(weather["daily"]["weathercode"][x])
-    temp_max = str(int(weather["daily"]["temperature_2m_max"][x]))
-    temp_min = str(int(weather["daily"]["temperature_2m_min"][x]))
+    CODE = str(weather["daily"]["weathercode"][x])
+    TEMP_MAX = str(int(weather["daily"]["temperature_2m_max"][x]))
+    TEMP_MIN = str(int(weather["daily"]["temperature_2m_min"][x]))
     # Add formatted line to tooltip
-    tooltip += "{}: {}/{} {}\n".format(
-        dow[:2], temp_max, temp_min, weather_lookup[code][1])
+    TOOLTIP += f"{dow[:2]}: {TEMP_MAX}/{TEMP_MIN} {weather_lookup[CODE][1]}\n"
 
 # Get boolean from config if exists, otherwise enable night icons
 try:
-    night_icons = config.getboolean('settings', 'night_icons')
+    NIGHT_ICONS = config.getboolean('settings', 'night_icons')
 except (KeyError, configparser.NoOptionError):
-    night_icons = 1
-if night_icons == 1:
+    NIGHT_ICONS = 1
+if NIGHT_ICONS == 1:
     night_hour = now.strftime("%-H")
     # Change icon if night time
     if int(night_hour) < sunrise or int(night_hour) > sunset:
         weather_lookup["0"][0] = ""
 
 # Print data formatted for waybar
-print(json.dumps({"text": "{} {}°F".format(
-    weather_lookup[code_now][0], temp_now), "tooltip": tooltip.rstrip()}))
+print(json.dumps({"text": f"{weather_lookup[CODE_NOW][0]} {TEMP_NOW}°F",
+                  "tooltip": TOOLTIP.rstrip()}))
