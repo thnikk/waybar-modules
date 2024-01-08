@@ -69,7 +69,7 @@ def update_cache(url, file, today):
         date_modified = datetime.fromtimestamp(
             os.path.getmtime(file)).strftime('%Y-%m-%d')
     except FileNotFoundError:
-        pass
+        date_modified = None
     # Check if the file exists and if the date modified is today
     if os.path.exists(file) and (date == date_modified or today is False):
         with open(file, encoding='utf-8') as cache:
@@ -157,6 +157,8 @@ elif AQI <= 300:
     QUALITY = "Very unhealthy"
 elif AQI <= 500:
     QUALITY = "Hazardous"
+else:
+    QUALITY = "Unknown"
 
 # Add data to tooltip
 TOOLTIP += f"City: {city}\n"
