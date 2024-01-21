@@ -24,7 +24,7 @@ config.read(config_file)
 def config_fail():
     """ Print info to waybar on fail """
     print(json.dumps({"text": ("Set up hoyo module in "
-                               "~/.config/hoyo-stats.json")}))
+                               "~/.config/hoyo-stats.ini")}))
 
 
 def time_diff(now, future, rate):
