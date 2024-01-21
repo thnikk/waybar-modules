@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -u
 """ Weather module for waybar using open-meteo """
 import json
 from datetime import datetime
@@ -22,7 +22,7 @@ config.read(config_file)
 postal_code = config["settings"]["zip"]
 if not postal_code:
     print(json.dumps({"text": "Set zip code in ~/.config/weather.ini"}))
-    sys.exit(1)
+    sys.exit(0)
 
 # Icon and text for weather codes
 weather_lookup = {
