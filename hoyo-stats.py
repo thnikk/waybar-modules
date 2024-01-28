@@ -5,6 +5,7 @@ import asyncio
 import json
 from datetime import datetime, timezone
 import os
+import time
 import configparser
 import genshin
 
@@ -103,12 +104,12 @@ try:
         try:
             asyncio.run(main())
         except genshin.errors.GenshinException:
-            pass
+            time.sleep(5)
 except FileNotFoundError:
     try:
         asyncio.run(main())
     except genshin.errors.GenshinException:
-        pass
+        time.sleep(5)
 
 
 # Load cache from file
