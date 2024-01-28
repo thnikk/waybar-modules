@@ -100,9 +100,15 @@ try:
     mod_time = datetime.fromtimestamp(os.path.getmtime(cache_file))
     mod_seconds = (datetime.now() - mod_time).total_seconds()
     if mod_seconds > 60*2:
-        asyncio.run(main())
+        try:
+            asyncio.run(main())
+        except genshin.errors.GenshinException:
+            pass
 except FileNotFoundError:
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except genshin.errors.GenshinException:
+        pass
 
 
 # Load cache from file

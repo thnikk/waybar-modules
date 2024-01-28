@@ -1,86 +1,124 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -u
 """
-Shows number of pacman, aur, and flatpak updates.
-Individual updates are listed in the tooltip (truncated at 50).
-Requires pacman-contrib, paru, and flatpak for respective functionality.
+Description: Waybar module for package updates
 Author: thnikk
 """
 import subprocess
-import json
 import concurrent.futures
+import json
+import time
 
-pool = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+# You can add whatever package manager you want here with the appropriate
+# command. Change the separator and values to get the package and version from
+# each line.
+config = {
+    "Pacman": {
+        "command": ["checkupdates"],
+        "separator": ' ',
+        "values": [0, -1]
+    },
+    "AUR": {
+        "command": ["paru", "-Qum"],
+        "separator": ' ',
+        "values": [0, -1]
+    },
+    "Flatpak": {
+        "command": ["flatpak", "remote-ls", "--updates"],
+        "separator": '\t',
+        "values": [0, 2]
+    },
+}
 
-# Visually differentiate matching packages
-alert_list = ["linux", "linux-lts", "libvirt", "qemu", "discord"]
+# Alert for these packages
+alerts = ["linux", "discord", "qemu", "libvirt"]
 
-# Get updates for pacman and aur
-package_managers = {"Pacman": [], "AUR": [], "Flatpak": []}
+pool = concurrent.futures.ThreadPoolExecutor(max_workers=len(config))
 
 
-def get_updates(man, command):
-    """ Get output of subprocess and split lines into list """
-    package_managers[man] = subprocess.run(
-            command, check=False, capture_output=True
+def get_output(command, separator, values) -> list:
+    """ Get formatted command output """
+    # Get line-separated output
+    while True:
+        try:
+            output = subprocess.run(
+                command, check=True, capture_output=True
             ).stdout.decode('utf-8').splitlines()
+        except subprocess.CalledProcessError:
+            time.sleep(1)
+            continue
+        break
+    # Find lines containing alerts
+    move = []
+    for alert in alerts:
+        for line in output:
+            if alert in line:
+                move.append(line)
+    # And move them to the front of the list
+    for line in move:
+        output.remove(line)
+        output.insert(0, line)
+    # Split each line into [package, version]
+    split_output = [
+        [
+            line.split(separator)[value] for value in values
+        ] for line in output
+    ]
+    return split_output
 
 
-# Get updates in parallel
-pool.submit(get_updates, "Pacman", ["checkupdates"])
-pool.submit(get_updates, "AUR", ["paru", "-Qum"])
-pool.submit(get_updates, "Flatpak", ["flatpak", "remote-ls", "--updates"])
-pool.shutdown(wait=True)
+def get_tooltip(package_managers) -> str:
+    """ Generate tooltip string """
+    tooltip = ""
+    for name, packages in package_managers.items():
+        # Skip if no packages
+        if len(packages) == 0:
+            continue
+        # Package manager name
+        tooltip += f"\n<span color='#8fa1be' font_size='16pt'>{name}</span>\n"
+        for count, package in enumerate(packages):
+            if count > 20:
+                # Only show first 20 packages
+                tooltip += f"{len(packages) - count} more...\n"
+                break
+            # Package name
+            if len(package[0]) > 20:
+                tooltip += f"{package[0][:17]}..."
+            else:
+                tooltip += f"{package[0]}"
+            tooltip += " " * (20 - len(package[0]))
+            # If version
+            if len(package) > 1:
+                # Version
+                tooltip += f" <span color='#a3be8c'>{package[1]}</span>\n"
+            else:
+                # Otherwise just newline
+                tooltip += "\n"
+    return tooltip.strip()
 
-# Get number of updates
-num_updates = sum(len(v) for v in package_managers.values())
 
-# Create an empty variable for updates tooltip
-TOOLTIP = ""
+def get_total(package_managers) -> int:
+    """ Get total number of updates """
+    return sum(len(packages) for packages in package_managers.values())
 
-# Iterate through package managers
-for manager, packages in package_managers.items():
-    # Only display package manager name if there are any new packages
-    if len(packages) > 0:
-        TOOLTIP += f"<span color='#8fa1be' font_size='16pt'>{manager}</span>\n"
-    # Count number of packages
-    PKG_COUNT = 0
-    # Iterate through packages
-    for package_string in packages:
-        # Break up package info into parts
-        if manager == "Flatpak":
-            parts = package_string.split("\t")
-            package = parts[0]
-            version = parts[2]
-        else:
-            parts = package_string.split()
-            package = parts[0]
-            version = parts[3]
-        # Shorten name if longer than 19 characters
-        if len(package) > 20:
-            package = package[:12] + "..." + package[len(package) - 5:]
-        # Add spaces up to 20th character
-        if len(package) < 20:
-            package = package + (" " * (20 - len(package)))
-        # Shorten version number if it's too long
-        if len(version) > 10:
-            version = version[:7] + "..."
-        # Mark the package if it's in the alert list
-        if package in alert_list:
-            package = "<span color='#bf616a'>" + package + "</span>"
-        # Format the rest to be pretty
-        TOOLTIP += package + " <span color='#a3be8c'>" + version + "</span>\n"
-        # Increase package count
-        PKG_COUNT += 1
-        # Break out of loop if more than 30 packages
-        if PKG_COUNT > 30:
-            # Say there are more that aren't included in the list
-            TOOLTIP += f"{len(packages) - PKG_COUNT} more...\n"
-            break
-    if len(packages) > 0:
-        TOOLTIP += "\n"
 
-if not TOOLTIP:
-    TOOLTIP = "<span font_size='16pt'>No updates</span>"
+def main() -> None:
+    """ Main function """
+    # Initialize dictionary first to set the order based on the config
+    package_managers = {name: [] for name in config}
+    # Get output for each package manager
+    for name, info in config.items():
+        thread = pool.submit(
+            get_output, info["command"], info["separator"], info["values"])
+        package_managers[name] = thread.result()
+    pool.shutdown(wait=True)
+    # Create variable for output
+    output = {
+        "text": get_total(package_managers),
+        "tooltip": get_tooltip(package_managers),
+    }
+    # Print for waybar
+    print(json.dumps(output))
 
-# Print formatted json
-print(json.dumps({"text": num_updates, "tooltip": TOOLTIP.rstrip()}))
+
+if __name__ == "__main__":
+    main()
