@@ -50,7 +50,10 @@ def get_output(command, separator, values, empty_error) -> list:
         except subprocess.CalledProcessError as error:
             # Only retry if error code is 2
             if error.returncode != empty_error:
-                print(vars(error), file=sys.stderr)
+                # Print errors to stderr
+                print(
+                    f"{command} failed with errors.\n",
+                    vars(error), file=sys.stderr)
                 time.sleep(1)
                 continue
             # Otherwise set empty output
