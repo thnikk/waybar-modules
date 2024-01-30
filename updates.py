@@ -43,9 +43,13 @@ def get_output(command, separator, values) -> list:
             output = subprocess.run(
                 command, check=True, capture_output=True
             ).stdout.decode('utf-8').splitlines()
-        except subprocess.CalledProcessError:
-            time.sleep(1)
-            continue
+        except subprocess.CalledProcessError as error:
+            # Only retry if error code is 1
+            if error.returncode == 1:
+                time.sleep(1)
+                continue
+            # Otherwise set empty output
+            output = []
         break
     # Find lines containing alerts
     move = []
