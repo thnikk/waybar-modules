@@ -6,6 +6,7 @@ Author: thnikk
 import subprocess
 import concurrent.futures
 import json
+import sys
 import time
 
 # You can add whatever package manager you want here with the appropriate
@@ -15,16 +16,19 @@ config = {
     "Pacman": {
         "command": ["checkupdates"],
         "separator": ' ',
+        "empty_error": 2,
         "values": [0, -1]
     },
     "AUR": {
         "command": ["paru", "-Qum"],
         "separator": ' ',
+        "empty_error": 1,
         "values": [0, -1]
     },
     "Flatpak": {
         "command": ["flatpak", "remote-ls", "--updates"],
         "separator": '\t',
+        "empty_error": 0,
         "values": [0, 2]
     },
 }
@@ -35,7 +39,7 @@ alerts = ["linux", "discord", "qemu", "libvirt"]
 pool = concurrent.futures.ThreadPoolExecutor(max_workers=len(config))
 
 
-def get_output(command, separator, values) -> list:
+def get_output(command, separator, values, empty_error) -> list:
     """ Get formatted command output """
     # Get line-separated output
     while True:
@@ -44,8 +48,9 @@ def get_output(command, separator, values) -> list:
                 command, check=True, capture_output=True
             ).stdout.decode('utf-8').splitlines()
         except subprocess.CalledProcessError as error:
-            # Only retry if error code is 1
-            if error.returncode == 1:
+            # Only retry if error code is 2
+            if error.returncode != empty_error:
+                print(vars(error), file=sys.stderr)
                 time.sleep(1)
                 continue
             # Otherwise set empty output
@@ -112,7 +117,8 @@ def main() -> None:
     # Get output for each package manager
     for name, info in config.items():
         thread = pool.submit(
-            get_output, info["command"], info["separator"], info["values"])
+            get_output, info["command"], info["separator"], info["values"],
+            info["empty_error"])
         package_managers[name] = thread.result()
     pool.shutdown(wait=True)
     # Create variable for output
