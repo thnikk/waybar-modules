@@ -105,6 +105,8 @@ def get_tooltip(package_managers) -> str:
             else:
                 # Otherwise just newline
                 tooltip += "\n"
+    if not tooltip:
+        tooltip = f"<span font_size='16pt'>No updates</span>"
     return tooltip.strip()
 
 
