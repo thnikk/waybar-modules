@@ -1,59 +1,63 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -u
 """
-Module for cyberpower UPS to show estimated power usage of system.
+Description: CyberPower UPS waybar module. Inspired by
+https://github.com/bjonnh/cyberpower-usb-watcher
 Author: thnikk
 """
-import subprocess
 import json
 import argparse
+import sys
+import hid
 
-# Get argument for offset
-parser = argparse.ArgumentParser(description="")
-parser.add_argument('-o', action='store',
-                    type=int, help='Wattage offset to apply to normal value')
+
+parser = argparse.ArgumentParser(description="CyberPower UPS module")
+parser.add_argument('vendor', action='store', type=str, help='Vendor ID')
+parser.add_argument('product', action='store', type=str, help='Product ID')
 args = parser.parse_args()
 
-# Only apply offset if argument is given
+
+class CyberPower:
+    """ Class for CyberPower UPS """
+    def __init__(self, vendor, product) -> None:
+        self.device = hid.Device(
+            path=hid.enumerate(vendor, product)[0]['path'])
+
+    def load_watts(self) -> int:
+        """ Get load """
+        return round(self.capacity() * (self.load_percent()/100))
+
+    def load_percent(self) -> int:
+        """ Get load percentage """
+        return self.device.get_feature_report(0x13, 2)[1]
+
+    def capacity(self) -> int:
+        """ Get capacity in watts """
+        report = self.device.get_feature_report(0x18, 6)
+        return report[2] * 256 + report[1]
+
+    def runtime(self) -> int:
+        """ Battery runtime """
+        report = self.device.get_feature_report(0x08, 6)
+        return int((report[3]*256+report[2])/60)
+
+    def battery_percent(self) -> int:
+        """ Battery percentage """
+        return self.device.get_feature_report(0x08, 6)[1]
+
+    def close(self) -> None:
+        """ Close device """
+        self.device.close()
+
+
 try:
-    OFFSET = args.offset
-except AttributeError:
-    OFFSET = 0
-
-# Get command output and split into lines
-pwrstat = subprocess.run(
-        ["pwrstat", "-status"],
-        check=False,
-        capture_output=True
-        ).stdout.decode('utf-8').splitlines()
-
-# Create empty dict for stats
-stats = {}
-
-# Parse info line by line from output
-for line in pwrstat:
-    if "." in line:
-        key = line.split(".")[0].strip().lower().replace(" ", "-")
-        value = line.split("..")[-1].strip(".").strip()
-        stats[key] = value
-
-# Get int for load and apply offset
-LOAD = int(stats["load"].split(" ")[0]) - OFFSET
-
-# Create tooltip
-tooltip = "<span color='#8fa1be' font_size='16pt'>UPS stats</span>\n" + \
-        "Remaining runtime: " + stats["remaining-runtime"] + "\n" + \
-        "Load: " + stats["load"] + "\n" + \
-        "Battery Capacity: " + stats["battery-capacity"]
-
-# Create output dict and load with info
-output = {
-    "text": f"{LOAD}",
-    "tooltip": f"{tooltip}",
-}
-
-# Apply class if load is high
-if LOAD > 800:
-    output["class"] = "hi-alert"
-
-# Print output
-print(json.dumps(output))
+    ups = CyberPower(int(args.vendor, 16), int(args.product, 16))
+except IndexError:
+    sys.exit(1)
+print(json.dumps({
+    "text": ups.load_watts(),
+    "tooltip": f"<span color='#8fa1be' font_size='16pt'>UPS stats</span>\n"
+    f"Runtime: {ups.runtime()} minutes\n"
+    f"Load: {ups.load_watts()} Watts ({ups.load_percent()}%)\n"
+    f"Battery: {ups.battery_percent()}%"
+}))
+ups.close()
