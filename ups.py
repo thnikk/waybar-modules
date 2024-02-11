@@ -7,6 +7,7 @@ Author: thnikk
 import json
 import argparse
 import sys
+import os
 import hid
 
 
@@ -14,6 +15,8 @@ parser = argparse.ArgumentParser(description="CyberPower UPS module")
 parser.add_argument('vendor', action='store', type=str, help='Vendor ID')
 parser.add_argument('product', action='store', type=str, help='Product ID')
 args = parser.parse_args()
+
+cache_file = os.path.expanduser("~/.cache/ups.json")
 
 
 class CyberPower:
@@ -49,15 +52,29 @@ class CyberPower:
         self.device.close()
 
 
-try:
-    ups = CyberPower(int(args.vendor, 16), int(args.product, 16))
-except IndexError:
-    sys.exit(1)
-print(json.dumps({
-    "text": ups.load_watts(),
-    "tooltip": f"<span color='#8fa1be' font_size='16pt'>UPS stats</span>\n"
-    f"Runtime: {ups.runtime()} minutes\n"
-    f"Load: {ups.load_watts()} Watts ({ups.load_percent()}%)\n"
-    f"Battery: {ups.battery_percent()}%"
-}))
-ups.close()
+def main():
+    """ Main function """
+    try:
+        ups = CyberPower(int(args.vendor, 16), int(args.product, 16))
+    except IndexError:
+        sys.exit(1)
+    output = json.dumps({
+        "text": ups.load_watts(),
+        "tooltip": f"<span color='#8fa1be' font_size='16pt'>UPS stats</span>\n"
+        f"Runtime: {ups.runtime()} minutes\n"
+        f"Load: {ups.load_watts()} Watts ({ups.load_percent()}%)\n"
+        f"Battery: {ups.battery_percent()}%"
+    })
+    print(output)
+    with open(cache_file, 'w', encoding='utf-8') as file:
+        file.write(output)
+    ups.close()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except hid.HIDException:
+        with open(cache_file, 'r', encoding='utf-8') as file:
+            cache = json.load(file)
+        print(json.dumps(cache))
