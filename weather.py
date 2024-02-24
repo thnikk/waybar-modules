@@ -100,8 +100,8 @@ weather_url = (
     f"https://api.open-meteo.com/v1/forecast?latitude={LAT}&longitude={LON}"
     "&hourly=temperature_2m,relativehumidity_2m,weathercode,windspeed_10m,"
     "winddirection_10m&daily=weathercode,temperature_2m_max,"
-    "temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit"
-    f"&timezone={tz}")
+    "temperature_2m_min,sunrise,sunset,wind_speed_10m_max,"
+    f"wind_direction_10m_dominant&temperature_unit=fahrenheit&timezone={tz}")
 
 weather = update_cache(weather_url, weather_file, True)
 
@@ -126,13 +126,19 @@ def deg_to_card(num):
     return arr[(val % 16)]
 
 
+def deg_to_ascii(deg) -> str:
+    """ Convert degrees to ascii arrow """
+    arrows = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"]
+    return arrows[round(int(deg)/45)]
+
+
 # Get data for current hour
 time_now = weather["hourly"]["time"][hour]
 CODE_NOW = str(weather["hourly"]["weathercode"][hour])
 TEMP_NOW = str(int(weather["hourly"]["temperature_2m"][hour]))
 HUMIDITY_NOW = str(weather["hourly"]["relativehumidity_2m"][hour])
 WINDSPEED_NOW = str(weather["hourly"]["windspeed_10m"][hour])
-winddirection_now = deg_to_card(weather["hourly"]["winddirection_10m"][hour])
+winddirection_now = deg_to_ascii(weather["hourly"]["winddirection_10m"][hour])
 sunrise = int(datetime.strptime(
     weather["daily"]["sunrise"][0], "%Y-%m-%dT%H:%M").strftime("%H"))
 sunset = int(datetime.strptime(
@@ -201,8 +207,14 @@ for x in range(7):
     CODE = str(weather["daily"]["weathercode"][x])
     TEMP_MAX = str(int(weather["daily"]["temperature_2m_max"][x]))
     TEMP_MIN = str(int(weather["daily"]["temperature_2m_min"][x]))
+    WIND_MAX = str(int(weather["daily"]["wind_speed_10m_max"][x]))
+    WIND_DIR = int(weather["daily"]["wind_direction_10m_dominant"][x])
+    WIND_TEXT = deg_to_card(WIND_DIR)
+    WIND_ARROW = deg_to_ascii(WIND_DIR)
     # Add formatted line to tooltip
-    TOOLTIP += f"{dow[:2]}: {TEMP_MAX}/{TEMP_MIN} {weather_lookup[CODE][1]}\n"
+    TOOLTIP += (f"{dow[:2]}: {TEMP_MAX}/{TEMP_MIN} "
+                f"{WIND_MAX} {WIND_ARROW} "
+                f"{weather_lookup[CODE][1]}\n")
 
 # Get boolean from config if exists, otherwise enable night icons
 try:
