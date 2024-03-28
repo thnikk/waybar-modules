@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import os
 import time
 import configparser
+import requests
 import genshin
 
 cache_file = os.path.expanduser("~/.cache/hoyo-stats.json")
@@ -20,6 +21,16 @@ if not os.path.exists(config_file):
 # Load config from cache
 config = configparser.ConfigParser()
 config.read(config_file)
+
+
+def wait_network() -> None:
+    """ Wait for network connection """
+    while True:
+        try:
+            requests.get('https://www.2dkun.xyz', timeout=3)
+            return
+        except requests.exceptions.ConnectionError:
+            time.sleep(3)
 
 
 def config_fail():
@@ -37,6 +48,7 @@ def time_diff(now, future, rate):
 
 async def main():
     """ Main function """
+    wait_network()
     cookies = {
             "ltuid": config["settings"]["ltuid"],
             "ltoken": config["settings"]["ltoken"]
