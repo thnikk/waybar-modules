@@ -8,6 +8,7 @@ import concurrent.futures
 import json
 import sys
 import time
+import requests
 
 # You can add whatever package manager you want here with the appropriate
 # command. Change the separator and values to get the package and version from
@@ -37,6 +38,16 @@ config = {
 alerts = ["linux", "discord", "qemu", "libvirt"]
 
 pool = concurrent.futures.ThreadPoolExecutor(max_workers=len(config))
+
+
+def wait_network() -> None:
+    """ Wait for network connection """
+    while True:
+        try:
+            requests.get('https://www.2dkun.xyz', timeout=3)
+            return
+        except requests.exceptions.ConnectionError:
+            time.sleep(3)
 
 
 def get_output(command, separator, values, empty_error) -> list:
@@ -88,7 +99,7 @@ def get_tooltip(package_managers) -> str:
         # Package manager name
         tooltip += f"\n<span color='#8fa1be' font_size='16pt'>{name}</span>\n"
         for count, package in enumerate(packages):
-            if count > 20:
+            if count >= 20:
                 # Only show first 20 packages
                 tooltip += f"{len(packages) - count} more...\n"
                 break
@@ -117,6 +128,7 @@ def get_total(package_managers) -> int:
 
 def main() -> None:
     """ Main function """
+    wait_network()
     # Initialize dictionary first to set the order based on the config
     package_managers = {name: [] for name in config}
     # Get output for each package manager
