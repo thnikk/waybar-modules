@@ -4,7 +4,6 @@ Waybar module for use with xdrip+ using the web service API
 Shows sgv on bar and time since last received value and delta in the tooltip
 Author: thnikk
 """
-
 import json
 from datetime import datetime
 import os
