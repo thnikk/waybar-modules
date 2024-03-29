@@ -210,7 +210,7 @@ for x in range(7):
     WIND_MAX = str(int(weather["daily"]["wind_speed_10m_max"][x]))
     WIND_DIR = int(weather["daily"]["wind_direction_10m_dominant"][x])
     WIND_TEXT = deg_to_card(WIND_DIR)
-    WIND_ARROW = deg_to_ascii(WIND_DIR)
+    WIND_ARROW = deg_to_card(WIND_DIR)
     # Add formatted line to tooltip
     TOOLTIP += (f"{dow[:2]}: {TEMP_MAX}/{TEMP_MIN} "
                 f"{WIND_MAX} {WIND_ARROW} "
