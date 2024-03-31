@@ -260,12 +260,17 @@ def tooltip(om, index, hours) -> str:
         "\n<span color='#8fa1be' font_size='16pt'>Hourly forecast</span>\n"
     )
 
+    hourly_output = []
     for hour in range(1, (hours or 5) + 1):
         text = (datetime.now() + timedelta(hours=hour)).strftime("%l%P")
-        output += (
+        hourly_output.append(
             f"{text}: {om.weather.hourly.temp(hour)} "
-            f"{om.weather.hourly.description(hour)}\n"
+            f"{om.weather.hourly.description(hour)}"
         )
+    # Strip whitespace from hour if all shown hours have whitespace
+    if set(item[0] for item in hourly_output) == {' '}:
+        hourly_output = [item[1:] for item in hourly_output]
+    output += "\n".join(hourly_output) + "\n"
 
     output += (
         "\n<span color='#8fa1be' font_size='16pt'>"
