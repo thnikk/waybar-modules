@@ -60,9 +60,9 @@ def time_diff(now, future, rate):
     return f"{until_next // 60}:{until_next % 60}"
 
 
-def old(old, now, min_diff):
+def old(old_time, min_diff):
     """ Check age of datetime objects """
-    diff = (datetime.now() - old).total_seconds()
+    diff = (datetime.now() - old_time).total_seconds()
     if diff > 60*min_diff:
         return True
     return False
@@ -84,8 +84,7 @@ async def generate_cache(config, game):
     if game == 'genshin':
         try:
             if old(
-                datetime.fromtimestamp(cache['Genshin']['timestamp']),
-                time_now, 5
+                datetime.fromtimestamp(cache['Genshin']['timestamp']), 5
             ):
                 raise ValueError
         except (KeyError, ValueError):
@@ -114,8 +113,7 @@ async def generate_cache(config, game):
     if game == 'hsr':
         try:
             if old(
-                datetime.fromtimestamp(cache['HSR']['timestamp']),
-                time_now, 5
+                datetime.fromtimestamp(cache['HSR']['timestamp']), 5
             ):
                 raise ValueError
         except (KeyError, ValueError):
