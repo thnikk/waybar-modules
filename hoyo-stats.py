@@ -1,6 +1,5 @@
 #!/usr/bin/python3 -u
 """ Show stats for Genshin and HSR in waybar module """
-import sys
 import asyncio
 import json
 from datetime import datetime, timezone
@@ -81,84 +80,73 @@ async def generate_cache(config, game):
     with open(cache_file, encoding='utf-8') as json_file:
         cache = json.load(json_file)
 
-    if game == 'genshin':
-        try:
-            if old(
-                datetime.fromtimestamp(cache['Genshin']['timestamp']), 5
-            ):
-                raise ValueError
-        except (KeyError, ValueError):
-            # Get genshin info
-            genshin_client = genshin.Client(cookies)
-            genshin_notes = await genshin_client.get_notes()
-            genshin_user = await genshin_client.get_full_genshin_user(
-                    config["settings"]["genshin_id"])
-            com_prog = genshin_notes.completed_commissions + \
-                int(genshin_notes.claimed_commission_reward)
-            cache['Genshin'] = {
-                "Resin": genshin_notes.current_resin,
-                "Until next 40": time_diff(
-                    time_now, genshin_notes.resin_recovery_time, 8),
-                "Dailies completed": f"{com_prog}/5",
-                "Remaining boss discounts":
-                genshin_notes.remaining_resin_discounts,
-                "Realm currency": genshin_notes.current_realm_currency,
-                "Abyss progress": (
-                    f"{genshin_user.abyss.current.max_floor} "
-                    f"{genshin_user.abyss.current.total_stars}"
-                    ),
-                "timestamp": datetime.timestamp(time_now)
-            }
+    try:
+        if game == 'genshin':
+            try:
+                if old(
+                    datetime.fromtimestamp(cache['Genshin']['timestamp']), 5
+                ):
+                    raise ValueError
+            except (KeyError, ValueError):
+                # Get genshin info
+                genshin_client = genshin.Client(cookies)
+                genshin_notes = await genshin_client.get_notes()
+                genshin_user = await genshin_client.get_full_genshin_user(
+                        config["settings"]["genshin_id"])
+                com_prog = genshin_notes.completed_commissions + \
+                    int(genshin_notes.claimed_commission_reward)
+                cache['Genshin'] = {
+                    "Resin": genshin_notes.current_resin,
+                    "Until next 40": time_diff(
+                        time_now, genshin_notes.resin_recovery_time, 8),
+                    "Dailies completed": f"{com_prog}/5",
+                    "Remaining boss discounts":
+                    genshin_notes.remaining_resin_discounts,
+                    "Realm currency": genshin_notes.current_realm_currency,
+                    "Abyss progress": (
+                        f"{genshin_user.abyss.current.max_floor} "
+                        f"{genshin_user.abyss.current.total_stars}"
+                        ),
+                    "timestamp": datetime.timestamp(time_now)
+                }
 
-    if game == 'hsr':
-        try:
-            if old(
-                datetime.fromtimestamp(cache['HSR']['timestamp']), 5
-            ):
-                raise ValueError
-        except (KeyError, ValueError):
-            # Get HSR info
-            hsr_client = genshin.Client(cookies, game=genshin.Game.STARRAIL)
-            hsr_notes = await hsr_client.get_starrail_notes()
-            hsr_user = await hsr_client.get_starrail_challenge(
-                    config["settings"]["hsr_id"])
-            moc_floors = [floor.name for floor in hsr_user.floors]
-            daily_prog = hsr_notes.current_train_score // 100
-            cache["HSR"] = {
-                "Trailblaze power": hsr_notes.current_stamina,
-                "Until next 40":
-                time_diff(time_now, hsr_notes.stamina_recovery_time, 6),
-                "Dailies completed": f"{daily_prog}/5",
-                "Remaining boss discounts":
-                hsr_notes.remaining_weekly_discounts,
-                "SU weekly score":
-                f"{hsr_notes.current_rogue_score}/"
-                f"{hsr_notes.max_rogue_score}",
-                "MoC progress": f"{len(moc_floors)} {hsr_user.total_stars}",
-                "timestamp": datetime.timestamp(time_now)
-            }
+        if game == 'hsr':
+            try:
+                if old(
+                    datetime.fromtimestamp(cache['HSR']['timestamp']), 5
+                ):
+                    raise ValueError
+            except (KeyError, ValueError):
+                # Get HSR info
+                hsr_client = genshin.Client(
+                    cookies, game=genshin.Game.STARRAIL)
+                hsr_notes = await hsr_client.get_starrail_notes()
+                hsr_user = await hsr_client.get_starrail_challenge(
+                        config["settings"]["hsr_id"])
+                moc_floors = [floor.name for floor in hsr_user.floors]
+                daily_prog = hsr_notes.current_train_score // 100
+                cache["HSR"] = {
+                    "Trailblaze power": hsr_notes.current_stamina,
+                    "Until next 40":
+                    time_diff(time_now, hsr_notes.stamina_recovery_time, 6),
+                    "Dailies completed": f"{daily_prog}/5",
+                    "Remaining boss discounts":
+                    hsr_notes.remaining_weekly_discounts,
+                    "SU weekly score":
+                    f"{hsr_notes.current_rogue_score}/"
+                    f"{hsr_notes.max_rogue_score}",
+                    "MoC progress":
+                    f"{len(moc_floors)} {hsr_user.total_stars}",
+                    "timestamp": datetime.timestamp(time_now)
+                }
+    except genshin.errors.GenshinException:
+        time.sleep(5)
 
     # Write dictionary to json file
     with open(cache_file, "w", encoding='utf-8') as file:
         file.write(json.dumps(cache, indent=4))
 
     return cache
-
-
-def get_cache(config, game):
-    """ Generate cache if necessary """
-    try:
-        mod_time = datetime.fromtimestamp(os.path.getmtime(cache_file))
-        mod_seconds = (datetime.now() - mod_time).total_seconds()
-        if mod_seconds > 60*2:
-            raise ValueError
-    except (FileNotFoundError, ValueError):
-        try:
-            asyncio.run(generate_cache(config, game))
-        except genshin.errors.GenshinException:
-            time.sleep(5)
-    with open(cache_file, encoding='utf-8') as json_file:
-        return json.load(json_file)
 
 
 def genshin_module(cache):
