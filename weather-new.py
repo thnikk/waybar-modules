@@ -294,8 +294,9 @@ def main():
     now = datetime.now()
     hour_now = int(now.strftime('%H'))
     night = (
-        om.weather.daily.sunrise > hour_now >
-        om.weather.daily.sunset and args.n) or False
+        om.weather.daily.sunrise > hour_now
+        or hour_now > om.weather.daily.sunset) and args.n
+
     print(json.dumps(
         {
             "text": f"{om.weather.hourly.icon(hour_now, night)} "
