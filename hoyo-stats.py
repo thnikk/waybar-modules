@@ -36,16 +36,6 @@ def get_config():
     return config
 
 
-def wait_network() -> None:
-    """ Wait for network connection """
-    while True:
-        try:
-            requests.get('https://www.2dkun.xyz', timeout=3)
-            return
-        except requests.exceptions.ConnectionError:
-            time.sleep(3)
-
-
 def config_fail():
     """ Print info to waybar on fail """
     print(json.dumps({"text": ("Set up hoyo module in "
@@ -69,7 +59,6 @@ def old(old_time, min_diff):
 
 async def generate_cache(config, game):
     """ Main function """
-    wait_network()
     cookies = {
             "ltuid": config["settings"]["ltuid"],
             "ltoken": config["settings"]["ltoken"]
