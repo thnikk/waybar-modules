@@ -40,16 +40,6 @@ alerts = ["linux", "discord", "qemu", "libvirt"]
 pool = concurrent.futures.ThreadPoolExecutor(max_workers=len(config))
 
 
-def wait_network() -> None:
-    """ Wait for network connection """
-    while True:
-        try:
-            requests.get('https://www.2dkun.xyz', timeout=3)
-            return
-        except requests.exceptions.ConnectionError:
-            time.sleep(3)
-
-
 def get_output(command, separator, values, empty_error) -> list:
     """ Get formatted command output """
     # Get line-separated output
@@ -128,7 +118,6 @@ def get_total(package_managers) -> int:
 
 def main() -> None:
     """ Main function """
-    wait_network()
     # Initialize dictionary first to set the order based on the config
     package_managers = {name: [] for name in config}
     # Get output for each package manager
