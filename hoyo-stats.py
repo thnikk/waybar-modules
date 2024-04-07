@@ -4,10 +4,10 @@ import asyncio
 import json
 from datetime import datetime, timezone
 import os
+import sys
 import time
 import configparser
 import argparse
-import requests
 import genshin
 
 cache_file = os.path.expanduser("~/.cache/hoyo-stats.json")
@@ -53,10 +53,12 @@ def old(old_time, min_diff):
     """ Check age of datetime objects """
     diff = (datetime.now() - old_time).total_seconds()
     if diff > 60*min_diff:
+        print('Cache is old, fetching new data.', file=sys.stderr)
         return True
     return False
 
 
+# pylint: disable=too-many-locals
 async def generate_cache(config, game):
     """ Main function """
     cookies = {
@@ -77,7 +79,7 @@ async def generate_cache(config, game):
                 ):
                     raise ValueError
             except (KeyError, ValueError):
-                # Get genshin info
+                # pylint: disable=no-member
                 genshin_client = genshin.Client(cookies)
                 genshin_notes = await genshin_client.get_notes()
                 genshin_user = await genshin_client.get_full_genshin_user(
@@ -106,7 +108,7 @@ async def generate_cache(config, game):
                 ):
                     raise ValueError
             except (KeyError, ValueError):
-                # Get HSR info
+                # pylint: disable=no-member
                 hsr_client = genshin.Client(
                     cookies, game=genshin.Game.STARRAIL)
                 hsr_notes = await hsr_client.get_starrail_notes()
