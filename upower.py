@@ -26,33 +26,50 @@ out_dict = {
     "tooltip": "",
 }
 
-# Iterate through devices
-for device in upower_json:
-    # Check to see if the detail section exists for the device
-    if 'detail' in device.keys():
-        # Check to see if the percentage isn't 0
-        if device['detail']['percentage'] != 0.0:
-            # Get the type of device
-            name = device['detail']['type']
-            # Only pull percentage up to . or % (first 2 digits)
-            percent = int(str(device['detail']['percentage']
-                              ).split('.', 1)[0].split('%', 1)[0])
 
-            battery_icon = battery_icons[percent // 25]
+def get_icon(name, icon_table) -> str:
+    """ Get icon for name """
+    for item, icon in icon_table.items():
+        if item.lower() in name.lower():
+            return icon
+    return '?'
 
-            out_dict["text"] = battery_icon
-            out_dict["alt"] = out_dict["alt"] + \
-                device_icons[name] + " " + battery_icon + " "
-            out_dict["tooltip"] = out_dict["tooltip"] + \
-                name + " " + str(percent) + "\n"
 
-# Remove trailing delimeters
-if out_dict["text"].endswith(" "):
+def main():
+    """ Main """
+    # Iterate through devices
+    for device in upower_json:
+        # Check to see if the detail section exists for the device
+        if 'detail' in device.keys():
+            # print(device)
+            # Check to see if the percentage isn't 0
+            if device['detail']['percentage'] != 0.0:
+                # Get the type of device
+                try:
+                    name = device['model']
+                except KeyError:
+                    continue
+                # Only pull percentage up to . or % (first 2 digits)
+                percent = int(str(device['detail']['percentage']
+                                  ).split('.', 1)[0].split('%', 1)[0])
+
+                battery_icon = battery_icons[percent // 25]
+
+                ICON = get_icon(name, device_icons)
+
+                out_dict["text"] = battery_icon
+                out_dict["alt"] = out_dict["alt"] + \
+                    ICON + " " + battery_icon + " "
+                out_dict["tooltip"] = out_dict["tooltip"] + \
+                    name + " " + str(percent) + "\n"
+
+    # Remove trailing delimeters
     out_dict["text"] = out_dict["text"].rstrip(' ')
-if out_dict["alt"].endswith(" "):
     out_dict["alt"] = out_dict["alt"].rstrip(' ')
-if out_dict["tooltip"].endswith("\n"):
     out_dict["tooltip"] = out_dict["tooltip"].rstrip('\n')
 
+    print(json.dumps(out_dict))
 
-print(json.dumps(out_dict))
+
+if __name__ == "__main__":
+    main()
