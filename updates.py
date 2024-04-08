@@ -7,8 +7,9 @@ Author: thnikk
 import subprocess
 import concurrent.futures
 import json
-import sys
 import time
+import os
+from common import debug_print, Cache
 
 # You can add whatever package manager you want here with the appropriate
 # command. Change the separator and values to get the package and version from
@@ -49,14 +50,13 @@ def get_output(command, separator, values, empty_error) -> list:
                 command, check=True, capture_output=True
             ).stdout.decode('utf-8').splitlines()
         except subprocess.CalledProcessError as error:
-            # Only retry if error code is 2
-            if error.returncode != empty_error:
+            # Use cache if no updates or command isn't found
+            if error.returncode != empty_error and error.returncode != 127:
                 # Print errors to stderr
-                print(
-                    f"{command} failed with errors.\n",
-                    vars(error), file=sys.stderr)
-                time.sleep(1)
-                continue
+                debug_print(
+                    f"[{error.returncode}] "
+                    f"{vars(error)['stderr'].decode('utf-8')}")
+                raise ValueError from error
             # Otherwise set empty output
             output = []
         break
@@ -118,15 +118,22 @@ def get_total(package_managers) -> int:
 
 def main() -> None:
     """ Main function """
-    # Initialize dictionary first to set the order based on the config
-    package_managers = {name: [] for name in config}
-    # Get output for each package manager
-    for name, info in config.items():
-        thread = pool.submit(
-            get_output, info["command"], info["separator"], info["values"],
-            info["empty_error"])
-        package_managers[name] = thread.result()
-    pool.shutdown(wait=True)
+    cache = Cache(os.path.expanduser('~/.cache/updates.json'))
+    try:
+        # Initialize dictionary first to set the order based on the config
+        package_managers = {name: [] for name in config}
+        # Get output for each package manager
+        for name, info in config.items():
+            thread = pool.submit(
+                get_output, info["command"], info["separator"], info["values"],
+                info["empty_error"])
+            package_managers[name] = thread.result()
+        pool.shutdown(wait=True)
+        cache.save(package_managers)
+    except ValueError:
+        time.sleep(5)
+        debug_print('Loading data from cache file.')
+        package_managers = cache.load()
 
     # Create variable for output
     total = get_total(package_managers)
