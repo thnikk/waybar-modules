@@ -7,7 +7,7 @@ from subprocess import run, CalledProcessError
 import json
 from glob import glob
 import sys
-from common import debug_print
+from common import print_debug
 
 
 def process_name(pid):
@@ -43,7 +43,7 @@ def json_output(command):
             command, capture_output=True, check=True
         ).stdout.decode('utf-8')
     except CalledProcessError:
-        debug_print('Not using pipewire, quitting.')
+        print_debug('Not using pipewire, quitting.')
         sys.exit(1)
     # Pipewire will occasionally return multiple JSON objects
     # In this case, we split them and only return the first

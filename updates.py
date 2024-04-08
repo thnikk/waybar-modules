@@ -9,7 +9,7 @@ import concurrent.futures
 import json
 import time
 import os
-from common import debug_print, Cache
+from common import print_debug, Cache
 
 # You can add whatever package manager you want here with the appropriate
 # command. Change the separator and values to get the package and version from
@@ -53,7 +53,7 @@ def get_output(command, separator, values, empty_error) -> list:
             # Use cache if no updates or command isn't found
             if error.returncode != empty_error and error.returncode != 127:
                 # Print errors to stderr
-                debug_print(
+                print_debug(
                     f"[{error.returncode}] "
                     f"{vars(error)['stderr'].decode('utf-8').rstrip()}")
                 raise ValueError from error
@@ -132,7 +132,7 @@ def main() -> None:
         cache.save(package_managers)
     except ValueError:
         time.sleep(5)
-        debug_print('Loading data from cache file.')
+        print_debug('Loading data from cache file.')
         package_managers = cache.load()
 
     # Create variable for output

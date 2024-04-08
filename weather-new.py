@@ -9,7 +9,7 @@ import json
 import os
 import argparse
 import requests
-from common import debug_print
+from common import print_debug
 
 
 def parse_args():
@@ -52,9 +52,9 @@ class OpenMeteo():  # pylint: disable=too-few-public-methods
                 data = json.load(file)
             if str(zip_code) not in data['results'][0]['postcodes']:
                 raise ValueError("Updated postcode")
-            debug_print(f"Loading data from cache at {path}.")
+            print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
-            debug_print("Fetching new geocode data.")
+            print_debug("Fetching new geocode data.")
             data = requests.get(url, timeout=3).json()
             with open(path, 'w', encoding='utf-8') as file:
                 file.write(json.dumps(data, indent=4))
@@ -125,9 +125,9 @@ class Weather():  # pylint: disable=too-few-public-methods
                 raise ValueError('old')
             with open(path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
-            debug_print(f"Loading data from cache at {path}.")
+            print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
-            debug_print("Fetching new data.")
+            print_debug("Fetching new data.")
             data = requests.get(url, timeout=3).json()
             with open(path, 'w', encoding='utf-8') as file:
                 file.write(json.dumps(data, indent=4))
@@ -227,9 +227,9 @@ class Pollution():
                 raise ValueError('old')
             with open(path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
-            debug_print(f"Loading data from cache at {path}.")
+            print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
-            debug_print("Fetching new data.")
+            print_debug("Fetching new data.")
             data = requests.get(url, timeout=3).json()
             with open(path, 'w', encoding='utf-8') as file:
                 file.write(json.dumps(data, indent=4))

@@ -9,7 +9,7 @@ import inspect
 import json
 
 
-def debug_print(msg):
+def print_debug(msg):
     """ Print debug message """
     # Get filename of program calling this function
     frame = inspect.stack()[1]

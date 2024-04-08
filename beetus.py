@@ -11,6 +11,7 @@ import configparser
 import sys
 import pytz
 import requests
+from common import print_debug, Cache
 
 
 def get_config() -> configparser.ConfigParser:
@@ -47,19 +48,17 @@ def get_data(config):
     """ Get new data from API """
     # Build header for http request with api key
     h = {"api-secret": config['settings']['api_secret']}
-    cache_file = os.path.expanduser("~/.cache/beetus.json")
+    cache = Cache(os.path.expanduser("~/.cache/beetus.json"))
     try:
         data = requests.get((f"http://{config['settings']['ip']}:"
                             f"{config['settings']['port']}/sgv.json"),
                             headers=h, timeout=3).json()
-        with open(cache_file, "w", encoding='utf-8') as cache:
-            cache.write(json.dumps(data, indent=4))
+        cache.save(data)
     except requests.exceptions.ConnectionError:
         try:
-            with open(cache_file, encoding='utf-8') as cache:
-                data = json.load(cache)
+            data = cache.load()
         except FileNotFoundError:
-            print('Something is fucked up, bruh.')
+            print_debug('Something is fucked up, bruh.')
             print_error_to_bar("Couldn't connect to api or use cache file.")
             sys.exit(1)
     return data
