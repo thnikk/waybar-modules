@@ -5,6 +5,15 @@ Author: thnikk
 """
 from subprocess import run
 import json
+import argparse
+
+
+def parse_args():
+    """ Parse arguments """
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-e', '--exclude', type=str, help='Comma-separated exclude list')
+    return parser.parse_args()
 
 
 def get_output(command) -> list:
@@ -29,11 +38,29 @@ def style(input_string, color=None, size=None, bg=None) -> str:
     return " ".join(output) + input_string + "</span>"
 
 
+def filter_services(services, blacklist):
+    """ Filter services through blacklist """
+    return [
+        service for service in services
+        if service.split('.')[0] not in blacklist
+    ]
+
+
 def main():
     """ Main function """
-    failed_system = get_output(['systemctl', '--failed', '--legend=no'])
-    failed_user = get_output(['systemctl', '--user', '--failed',
-                              '--legend=no'])
+    args = parse_args()
+    try:
+        blacklist = args.exclude.split(',')
+    except AttributeError:
+        blacklist = []
+    failed_system = filter_services(
+        get_output(['systemctl', '--failed', '--legend=no']),
+        blacklist
+    )
+    failed_user = filter_services(
+        get_output(['systemctl', '--user', '--failed', '--legend=no']),
+        blacklist
+    )
 
     num_failed = len(failed_system) + len(failed_user)
 
