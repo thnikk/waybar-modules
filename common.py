@@ -30,7 +30,7 @@ class Cache:
     def save(self, cache):
         """ Save cache to file """
         with open(self.cache_file, 'w', encoding='utf-8') as file:
-            file.write(json.dumps(cache))
+            file.write(json.dumps(cache, indent=4))
 
     def load(self):
         """ Load cache from file """
