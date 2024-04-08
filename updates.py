@@ -55,7 +55,7 @@ def get_output(command, separator, values, empty_error) -> list:
                 # Print errors to stderr
                 debug_print(
                     f"[{error.returncode}] "
-                    f"{vars(error)['stderr'].decode('utf-8')}")
+                    f"{vars(error)['stderr'].decode('utf-8').rstrip()}")
                 raise ValueError from error
             # Otherwise set empty output
             output = []
