@@ -15,6 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('profile')
     parser.add_argument('-w', '--wattage', type=int, default=1000)
+    parser.add_argument('-o', '--offset', type=int, default=0)
     return parser.parse_args()
 
 
@@ -75,7 +76,7 @@ def main():
     except IndexError:
         sys.exit(1)
     output = json.dumps({
-        "text": ups.load_watts(),
+        "text": ups.load_watts() - args.offset,
         "tooltip": f"<span color='#8fa1be' font_size='16pt'>UPS stats</span>\n"
         f"Runtime: {ups.runtime}\n"
         f"Load: {ups.load_percent}%\n"
