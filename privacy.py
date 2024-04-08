@@ -6,6 +6,8 @@ Author: thnikk
 from subprocess import run, CalledProcessError
 import json
 from glob import glob
+import sys
+from common import debug_print
 
 
 def process_name(pid):
@@ -36,9 +38,18 @@ def get_webcams():
 
 def json_output(command):
     """ Get json for command output """
-    output = run(
-        command, capture_output=True, check=True
-    ).stdout.decode('utf-8')
+    try:
+        output = run(
+            command, capture_output=True, check=True
+        ).stdout.decode('utf-8')
+    except CalledProcessError:
+        debug_print('Not using pipewire, quitting.')
+        sys.exit(1)
+    # Pipewire will occasionally return multiple JSON objects
+    # In this case, we split them and only return the first
+    if "]\n[" in output:
+        output = output.split(']\n[')[0] + "]"
+        return json.loads(output)
     return json.loads(output)
 
 
@@ -71,7 +82,7 @@ def get_categories(pw):
                     running[mtype] = []
                 if program not in running[mtype]:
                     running[mtype].append(program)
-        except KeyError:
+        except (KeyError, TypeError):
             pass
     webcams = get_webcams()
     running.update(webcams)
