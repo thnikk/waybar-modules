@@ -9,7 +9,7 @@ import json
 import os
 import argparse
 import requests
-from common import print_debug
+from common import print_debug, Cache
 
 
 def parse_args():
@@ -47,17 +47,16 @@ class OpenMeteo():  # pylint: disable=too-few-public-methods
 
     def __cache__(self, path, url, zip_code):
         """ Update cache file if enough time has passed. """
+        cache = Cache(path)
         try:
-            with open(path, 'r', encoding='utf-8') as file:
-                data = json.load(file)
+            data = cache.load()
             if str(zip_code) not in data['results'][0]['postcodes']:
                 raise ValueError("Updated postcode")
             print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
             print_debug("Fetching new geocode data.")
             data = requests.get(url, timeout=3).json()
-            with open(path, 'w', encoding='utf-8') as file:
-                file.write(json.dumps(data, indent=4))
+            cache.save(data)
         return data
 
 
@@ -119,18 +118,17 @@ class Weather():  # pylint: disable=too-few-public-methods
 
     def __cache__(self, path, url, delta) -> dict:
         """ Update cache file if enough time has passed. """
+        cache = Cache(path)
         try:
             mtime = datetime.fromtimestamp(os.path.getmtime(path))
             if (datetime.now() - mtime) > delta:
                 raise ValueError('old')
-            with open(path, 'r', encoding='utf-8') as file:
-                data = json.load(file)
+            data = cache.load()
             print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
             print_debug("Fetching new data.")
             data = requests.get(url, timeout=3).json()
-            with open(path, 'w', encoding='utf-8') as file:
-                file.write(json.dumps(data, indent=4))
+            cache.save(data)
         return data
 
 
@@ -221,18 +219,17 @@ class Pollution():
 
     def __cache__(self, path, url, delta) -> dict:
         """ Update cache file if enough time has passed. """
+        cache = Cache(path)
         try:
             mtime = datetime.fromtimestamp(os.path.getmtime(path))
             if (datetime.now() - mtime) > delta:
                 raise ValueError('old')
-            with open(path, 'r', encoding='utf-8') as file:
-                data = json.load(file)
+            data = cache.load()
             print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
             print_debug("Fetching new data.")
             data = requests.get(url, timeout=3).json()
-            with open(path, 'w', encoding='utf-8') as file:
-                file.write(json.dumps(data, indent=4))
+            cache.save(data)
         return data
 
     def __aqi_to_desc__(self, value) -> str:
