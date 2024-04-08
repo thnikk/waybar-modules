@@ -7,20 +7,23 @@ Author: thnikk
 from datetime import datetime, timedelta
 import json
 import os
-import sys
 import argparse
 import requests
+from common import debug_print
 
-parser = argparse.ArgumentParser(
-    description="Get weather formatted for waybar")
-parser.add_argument(
-    'zip', type=str, help="Zip code")
-parser.add_argument(
-    '-n', action='store_true', help="Enable night icons")
-parser.add_argument(
-    '-f', type=int, const=5, nargs='?',
-    help="How many hours to show in tooltip (default is 5)")
-args = parser.parse_args()
+
+def parse_args():
+    """ Parse arguments """
+    parser = argparse.ArgumentParser(
+        description="Get weather formatted for waybar")
+    parser.add_argument(
+        'zip', type=str, help="Zip code")
+    parser.add_argument(
+        '-n', action='store_true', help="Enable night icons")
+    parser.add_argument(
+        '-f', type=int, const=5, nargs='?',
+        help="How many hours to show in tooltip (default is 5)")
+    return parser.parse_args()
 
 
 class OpenMeteo():  # pylint: disable=too-few-public-methods
@@ -49,9 +52,9 @@ class OpenMeteo():  # pylint: disable=too-few-public-methods
                 data = json.load(file)
             if str(zip_code) not in data['results'][0]['postcodes']:
                 raise ValueError("Updated postcode")
-            print(f"Loading data from cache at {path}.", file=sys.stderr)
+            debug_print(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
-            print("Fetching new geocode data.", file=sys.stderr)
+            debug_print("Fetching new geocode data.")
             data = requests.get(url, timeout=3).json()
             with open(path, 'w', encoding='utf-8') as file:
                 file.write(json.dumps(data, indent=4))
@@ -122,9 +125,9 @@ class Weather():  # pylint: disable=too-few-public-methods
                 raise ValueError('old')
             with open(path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
-            print(f"Loading data from cache at {path}.", file=sys.stderr)
+            debug_print(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
-            print("Fetching new data.", file=sys.stderr)
+            debug_print("Fetching new data.")
             data = requests.get(url, timeout=3).json()
             with open(path, 'w', encoding='utf-8') as file:
                 file.write(json.dumps(data, indent=4))
@@ -224,9 +227,9 @@ class Pollution():
                 raise ValueError('old')
             with open(path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
-            print(f"Loading data from cache at {path}.", file=sys.stderr)
+            debug_print(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
-            print("Fetching new data.", file=sys.stderr)
+            debug_print("Fetching new data.")
             data = requests.get(url, timeout=3).json()
             with open(path, 'w', encoding='utf-8') as file:
                 file.write(json.dumps(data, indent=4))
@@ -290,6 +293,7 @@ def tooltip(om, index, hours) -> str:
 
 def main():
     """ Main function """
+    args = parse_args()
     om = OpenMeteo(args.zip)
     now = datetime.now()
     hour_now = int(now.strftime('%H'))

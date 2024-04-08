@@ -9,6 +9,7 @@ import time
 import configparser
 import argparse
 import genshin
+from common import debug_print
 
 cache_file = os.path.expanduser("~/.cache/hoyo-stats.json")
 config_file = os.path.expanduser("~/.config/hoyo-stats.ini")
@@ -53,7 +54,7 @@ def old(old_time, min_diff):
     """ Check age of datetime objects """
     diff = (datetime.now() - old_time).total_seconds()
     if diff > 60*min_diff:
-        print('Cache is old, fetching new data.', file=sys.stderr)
+        debug_print('Cache is old, fetching new data.')
         return True
     return False
 
