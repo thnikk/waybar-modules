@@ -1,6 +1,7 @@
 #!/usr/bin/python3 -u
 """
-Description: Waybar module for package updates
+Description: Waybar module for package updates. Only use this on one bar
+because I don't feel like dealing with race conditions for pulling updates.
 Author: thnikk
 """
 import subprocess
@@ -8,7 +9,6 @@ import concurrent.futures
 import json
 import sys
 import time
-import requests
 
 # You can add whatever package manager you want here with the appropriate
 # command. Change the separator and values to get the package and version from
@@ -127,9 +127,16 @@ def main() -> None:
             info["empty_error"])
         package_managers[name] = thread.result()
     pool.shutdown(wait=True)
+
     # Create variable for output
+    total = get_total(package_managers)
+    if total:
+        text = f" {total}"
+    else:
+        text = ""
+
     output = {
-        "text": get_total(package_managers),
+        "text": text,
         "tooltip": get_tooltip(package_managers),
     }
     # Print for waybar

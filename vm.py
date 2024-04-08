@@ -15,8 +15,8 @@ if len(domains) > 0:
     TOOLTIP = "<span color='#8fa1be' font_size='16pt'>Running VMs</span>\n"
     for domain in domains:
         TOOLTIP += domain + "\n"
+    # Print output
+    print(json.dumps({
+        "text": f" {str(len(domains))}", "tooltip": TOOLTIP.rstrip()}))
 else:
-    TOOLTIP = "No VMs running."
-
-# Print output
-print(json.dumps({"text": str(len(domains)), "tooltip": TOOLTIP.rstrip()}))
+    print(json.dumps({"text": ""}))
