@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -u
 """
-Description:
-Author:
+Description: Track updates from git repo
+Author: thnikk
 """
 import os
 from subprocess import run, CalledProcessError
@@ -39,7 +39,8 @@ class Git:
 def parse_args():
     """ Parse arguments """
     parser = argparse.ArgumentParser()
-    parser.add_argument('path', type=str)
+    parser.add_argument('path', type=str, help='Path to git repo')
+    parser.add_argument('-i', '--icon', type=str, default='')
     return parser.parse_args()
 
 
@@ -51,7 +52,7 @@ def main():
     commits = git.commits()
     if commits:
         print(json.dumps({
-            "text": f" {len(commits)}",
+            "text": f"{args.icon} {len(commits)}",
             "tooltip": "\n".join(commits)
         }))
     else:
