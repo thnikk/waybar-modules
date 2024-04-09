@@ -262,10 +262,12 @@ def tooltip(om, index, hours) -> str:
 
     hourly_output = []
     for hour in range(1, (hours or 5) + 1):
+        hour_index = int(
+            (datetime.now() + timedelta(hours=hour)).strftime('%H'))
         text = (datetime.now() + timedelta(hours=hour)).strftime("%l%P")
         hourly_output.append(
-            f"{text}: {om.weather.hourly.temp(hour)} "
-            f"{om.weather.hourly.description(hour)}"
+            f"{text}: {om.weather.hourly.temp(hour_index)} "
+            f"{om.weather.hourly.description(hour_index)}"
         )
     # Strip whitespace from hour if all shown hours have whitespace
     if set(item[0] for item in hourly_output) == {' '}:
