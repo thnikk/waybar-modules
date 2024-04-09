@@ -8,6 +8,7 @@ import sys
 import os
 import argparse
 import requests
+from common import print_debug
 
 
 def parse_args():
@@ -26,7 +27,7 @@ def get_config():
         with open(path, 'r', encoding='utf-8') as file:
             return json.loads(file.read())
     except (FileNotFoundError, json.decoder.JSONDecodeError) as e:
-        print(e.args, file=sys.stderr)
+        print_debug(e.args)
         print(json.dumps(
             {"text": "Config error", "class": "red"}
         ))
@@ -43,9 +44,8 @@ class CyberPower:  # pylint: disable=too-few-public-methods
             }
         )
         if status_full.status_code != 200:
-            print(
-                f"Request failed with code {status_full.status_code}",
-                file=sys.stderr)
+            print_debug(
+                f"Request failed with code {status_full.status_code}")
             sys.exit(0)
         self.status = status_full.json()
 
