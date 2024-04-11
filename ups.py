@@ -28,10 +28,11 @@ class CyberPower:
         self.device = hid.Device(
             path=hid.enumerate(vendor, product)[0]['path'])
         self.offset = offset
+        self.status_report = self.device.get_feature_report(0x0b, 3)[1]
 
     def load_watts(self) -> int:
         """ Get load """
-        return round(self.capacity() * (self.load_percent()/100))
+        return round(self.capacity() * (self.load_percent()/100) / 10) * 10
 
     def offset_watts(self) -> int:
         """ Get offset watts """
@@ -55,6 +56,18 @@ class CyberPower:
         """ Battery percentage """
         return self.device.get_feature_report(0x08, 6)[1]
 
+    def ac(self) -> bool:
+        """ AC status """
+        return bool(self.status_report & 1)
+
+    def charging(self) -> bool:
+        """ Charging status """
+        return bool(self.status_report & 2)
+
+    def full(self) -> bool:
+        """ Full status """
+        return bool((self.status_report & 16) > 0)
+
     def close(self) -> None:
         """ Close device """
         self.device.close()
@@ -75,12 +88,19 @@ def main():
             sys.exit(1)
         output = json.dumps({
             "text": ups.offset_watts(),
-            "tooltip": "<span color='#8fa1be' "
-            "font_size='16pt'>UPS stats</span>\n"
-            f"Runtime: {ups.runtime()} minutes\n"
-            f"Load: {ups.load_watts()} Watts ({ups.load_percent()}%)\n"
-            f"Battery: {ups.battery_percent()}%"
+            "tooltip": "\n".join([
+                "<span color='#8fa1be' "
+                "font_size='16pt'>UPS stats</span>",
+                f"Runtime: {ups.runtime()} minutes",
+                f"Load: {ups.load_watts()} Watts ({ups.load_percent()}%)",
+                f"Battery: {ups.battery_percent()}%",
+                f"AC power: {ups.ac()}",
+                f"Charging: {ups.charging()}",
+                f"Battery full: {ups.full()}",
+            ])
         })
+        if not ups.ac():
+            output['class'] = 'red'
         print(output)
         cache.save(output)
         ups.close()
