@@ -31,7 +31,11 @@ class CyberPower:
 
     def load_watts(self) -> int:
         """ Get load """
-        return round(self.capacity() * (self.load_percent()/100)) - self.offset
+        return round(self.capacity() * (self.load_percent()/100))
+
+    def offset_watts(self) -> int:
+        """ Get offset watts """
+        return self.load_watts() - self.offset
 
     def load_percent(self) -> int:
         """ Get load percentage """
@@ -70,7 +74,7 @@ def main():
         except IndexError:
             sys.exit(1)
         output = json.dumps({
-            "text": ups.load_watts(),
+            "text": ups.offset_watts(),
             "tooltip": "<span color='#8fa1be' "
             "font_size='16pt'>UPS stats</span>\n"
             f"Runtime: {ups.runtime()} minutes\n"
