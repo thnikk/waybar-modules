@@ -5,7 +5,7 @@ These are my custom waybar modules. Some of these are for specific hardware or s
 Some modules depend on a shell program to function:
 
 - updates.py: checkupdates, paru, flatpak (will only show updates if program is installed)
-- ups.py: PowerPanel
+- ups.py: python-hid
 
 ## Signals
 Waybar allows you to use signals to reload a module. This can help reduce unnecessary load on your system for modules that don't need to poll. A good example is the VM module, that can be updated through libvirt's qemu hook file. In this example, you'd add `pkill -RTMIN+1 waybar` to the hooks file. Other changes are required in the module config, which are:
