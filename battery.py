@@ -1,29 +1,20 @@
 #!/usr/bin/python3
 """
-Module for getting combined battery percentage for a supplied argument.
-For example, running the script with the argument BAT would combine
-BAT0 and BAT1 if you're using a laptop with multiple batteries.
+Description: Module for getting combined battery percentages.
 Author: thnikk
 """
-import os
+from glob import glob
+import sys
 import json
 import argparse
 
-# Path to all battery devices
-DEV_PATH = "/sys/class/power_supply"
 
-# Parse arguments for device
-parser = argparse.ArgumentParser(description="Combined battery module")
-parser.add_argument('name', action='store',
-                    type=str, help='Part of device name to search for')
-args = parser.parse_args()
-
-# Combined levels and capacities
-ALL_FULL = 0
-ALL_NOW = 0
-
-# Output tooltip
-TOOLTIP = ""
+def parse_args():
+    """ Parse arguments"""
+    parser = argparse.ArgumentParser(description="Combined battery module")
+    parser.add_argument('-n', '--name',
+                        type=str, help='Part of device name to search for')
+    return parser.parse_args()
 
 
 # Function to get percentage from level and capacity values
@@ -32,28 +23,52 @@ def get_percentage(now, full):
     return int((now / full) * 100)
 
 
-# Iterate through all power supply devices
-for device in os.listdir(DEV_PATH):
-    # If the device is supplied as an argument
-    if args.name[0] in device:
-        # Get values
-        device_full = int(open(
-            DEV_PATH + "/" + device + "/energy_full", encoding='utf-8').read())
-        device_now = int(open(
-            DEV_PATH + "/" + device + "/energy_now", encoding='utf-8').read())
+def main():
+    """ Main function """
+    all_full = 0
+    all_now = 0
+    tooltip = []
+
+    args = parse_args()
+
+    # Iterate through all power supply devices
+    for device in glob('/sys/class/power_supply/*'):
+        # If the device is supplied as an argument
+        if args.name and args.name in device:
+            continue
+        try:
+            # Get values
+            with open(
+                f"{device}/energy_full", 'r', encoding='utf-8'
+            ) as file:
+                device_full = int(file.read())
+            with open(
+                f"{device}/energy_now", 'r', encoding='utf-8'
+            ) as file:
+                device_now = int(file.read())
+        except FileNotFoundError:
+            continue
         # Add values to max
-        ALL_FULL += device_full
-        ALL_NOW += device_now
+        all_full += device_full
+        all_now += device_now
         # Get devices percentage
         device_percent = get_percentage(device_now, device_full)
         # Append individual battery percentage
-        TOOLTIP += device + ": " + str(device_percent) + "\n"
+        tooltip.append(f"{device}: {str(device_percent)}")
 
-# Get combined battery percentage
-all_percent = get_percentage(ALL_NOW, ALL_FULL)
-icons = [" ", " ", " ", " ", " "]
-icon = icons[all_percent // 25]
+    if not all_full:
+        print("No batteries found.")
+        sys.exit(1)
 
-# Print json output
-print(json.dumps({"text": icon + str(all_percent) + "%",
-                  "tooltip": TOOLTIP.rstrip()}))
+    # Get combined battery percentage
+    all_percent = get_percentage(all_now, all_full)
+    icons = [" ", " ", " ", " ", " "]
+    icon = icons[all_percent // 25]
+
+    # Print json output
+    print(json.dumps({"text": icon + str(all_percent) + "%",
+                      "tooltip": "\n".join(tooltip)}))
+
+
+if __name__ == "__main__":
+    main()
