@@ -249,6 +249,12 @@ class Pollution():
 
 def tooltip(om, index, hours) -> str:
     """ Generate tooltip """
+
+    if om.weather.daily.sunset > index > om.weather.daily.sunrise:
+        sun_status = f"Sunset at {om.weather.daily.sunset - 12}PM\n"
+    else:
+        sun_status = f"Sunrise at {om.weather.daily.sunrise}AM\n"
+
     output = (
         "<span color='#8fa1be' font_size='16pt'>Today</span>\n"
         f"City: {om.city}\n"
@@ -257,6 +263,7 @@ def tooltip(om, index, hours) -> str:
         f"Humidity: {om.weather.hourly.humidity(index)}%\n"
         f"Wind: {om.weather.hourly.wind(index)} mph\n"
         f"Air quality: {om.pollution.description(index)}\n"
+        f"{sun_status}"
         "\n<span color='#8fa1be' font_size='16pt'>Hourly forecast</span>\n"
     )
 
