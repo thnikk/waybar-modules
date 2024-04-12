@@ -32,8 +32,11 @@ class OpenMeteo():  # pylint: disable=too-few-public-methods
         """ Initialize class"""
         geo = self.__cache__(
             os.path.expanduser(f"~/.cache/geocode-{zip_code}.json"),
-            "https://geocoding-api.open-meteo.com/v1/search?name="
-            f"{zip_code}&count=1&language=en&format=json",
+            "https://geocoding-api.open-meteo.com/v1/search",
+            {
+                "name": zip_code, "count": 1,
+                "language": "en", "format": "json"
+            },
             zip_code
         )
         self.latitude = geo['results'][0]['latitude']
@@ -45,7 +48,7 @@ class OpenMeteo():  # pylint: disable=too-few-public-methods
         self.pollution = Pollution(
             self.latitude, self.longitude, self.timezone, zip_code)
 
-    def __cache__(self, path, url, zip_code):
+    def __cache__(self, path, url, qs, zip_code):
         """ Update cache file if enough time has passed. """
         cache = Cache(path)
         try:
@@ -56,7 +59,7 @@ class OpenMeteo():  # pylint: disable=too-few-public-methods
         except (FileNotFoundError, ValueError):
             try:
                 print_debug("Fetching new geocode data.")
-                data = requests.get(url, timeout=3).json()
+                data = requests.get(url, params=qs, timeout=3).json()
                 cache.save(data)
             except requests.exceptions.ConnectionError:
                 data = cache.load()
@@ -105,21 +108,28 @@ class Weather():  # pylint: disable=too-few-public-methods
     def __init__(self, lat, lon, timezone, zip_code):
         weather = self.__cache__(
             os.path.expanduser(f"~/.cache/weather-{zip_code}.json"),
-            f"https://api.open-meteo.com/v1/forecast?"
-            f"latitude={lat}&"
-            f"longitude={lon}&"
-            "&hourly=temperature_2m,relativehumidity_2m,weathercode,"
-            "windspeed_10m,winddirection_10m&daily=weathercode,"
-            "temperature_2m_max,temperature_2m_min,sunrise,sunset,"
-            "wind_speed_10m_max,wind_direction_10m_dominant&"
-            "temperature_unit=fahrenheit&"
-            f"timezone={timezone}",
+            "https://api.open-meteo.com/v1/forecast",
+            {
+                "latitude": lat, "longitude": lon,
+                "hourly": [
+                    "temperature_2m", "relativehumidity_2m", "weathercode",
+                    "windspeed_10m", "winddirection_10m",
+                    "apparent_temperature"
+                ],
+                "daily": [
+                    "weathercode", "temperature_2m_max", "temperature_2m_min",
+                    "sunrise,sunset", "wind_speed_10m_max",
+                    "wind_direction_10m_dominant"
+                ],
+                "temperature_unit": "fahrenheit",
+                "timezone": timezone,
+            },
             timedelta(hours=1)
         )
         self.hourly = Hourly(weather)
         self.daily = Daily(weather)
 
-    def __cache__(self, path, url, delta) -> dict:
+    def __cache__(self, path, url, qs, delta) -> dict:
         """ Update cache file if enough time has passed. """
         cache = Cache(path)
         try:
@@ -131,7 +141,7 @@ class Weather():  # pylint: disable=too-few-public-methods
         except (FileNotFoundError, ValueError):
             try:
                 print_debug("Fetching new data.")
-                data = requests.get(url, timeout=3).json()
+                data = requests.get(url, params=qs, timeout=3).json()
                 cache.save(data)
             except requests.exceptions.ConnectionError:
                 data = cache.load()
@@ -143,6 +153,7 @@ class Hourly():
     def __init__(self, weather):
         self.weathercodes = weather['hourly']['weathercode']
         self.temperatures = weather['hourly']['temperature_2m']
+        self.feelslikes = weather['hourly']['apparent_temperature']
         self.windspeeds = weather['hourly']['windspeed_10m']
         self.humidities = weather['hourly']['relativehumidity_2m']
 
@@ -161,6 +172,10 @@ class Hourly():
     def temp(self, index):
         """ Get temperature """
         return round(self.temperatures[index])
+
+    def feelslike(self, index):
+        """ Get temperature """
+        return round(self.feelslikes[index])
 
     def wind(self, index):
         """ Get windspeed """
@@ -216,14 +231,16 @@ class Pollution():
     def __init__(self, lat, lon, timezone, zip_code) -> None:
         pollution = self.__cache__(
             os.path.expanduser(f"~/.cache/pollution-{zip_code}.json"),
-            "https://air-quality-api.open-meteo.com/v1/air-quality?"
-            f"latitude={lat}&longitude={lon}&hourly=us_aqi"
-            f"&timezone={timezone}",
+            "https://air-quality-api.open-meteo.com/v1/air-quality",
+            {
+                "latitude": lat, "longitude": lon, "hourly": "us_aqi",
+                "timezone": timezone,
+            },
             timedelta(days=1)
         )
         self.aqi = pollution["hourly"]["us_aqi"]
 
-    def __cache__(self, path, url, delta) -> dict:
+    def __cache__(self, path, url, qs, delta) -> dict:
         """ Update cache file if enough time has passed. """
         cache = Cache(path)
         try:
@@ -235,7 +252,7 @@ class Pollution():
         except (FileNotFoundError, ValueError):
             try:
                 print_debug("Fetching new data.")
-                data = requests.get(url, timeout=3).json()
+                data = requests.get(url, params=qs, timeout=3).json()
                 cache.save(data)
             except requests.exceptions.ConnectionError:
                 data = cache.load()
@@ -269,6 +286,7 @@ def tooltip(om, index, hours) -> str:
         f"City: {om.city}\n"
         f"Description: {om.weather.hourly.description(index)}\n"
         f"Temperature: {om.weather.hourly.temp(index)}\n"
+        f"Feels like: {om.weather.hourly.feelslike(index)}\n"
         f"Humidity: {om.weather.hourly.humidity(index)}%\n"
         f"Wind: {om.weather.hourly.wind(index)} mph\n"
         f"Air quality: {om.pollution.description(index)}\n"
