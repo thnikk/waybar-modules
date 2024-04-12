@@ -54,9 +54,12 @@ class OpenMeteo():  # pylint: disable=too-few-public-methods
                 raise ValueError("Updated postcode")
             print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
-            print_debug("Fetching new geocode data.")
-            data = requests.get(url, timeout=3).json()
-            cache.save(data)
+            try:
+                print_debug("Fetching new geocode data.")
+                data = requests.get(url, timeout=3).json()
+                cache.save(data)
+            except requests.exceptions.ConnectionError:
+                data = cache.load()
         return data
 
 
@@ -126,9 +129,12 @@ class Weather():  # pylint: disable=too-few-public-methods
             data = cache.load()
             print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
-            print_debug("Fetching new data.")
-            data = requests.get(url, timeout=3).json()
-            cache.save(data)
+            try:
+                print_debug("Fetching new data.")
+                data = requests.get(url, timeout=3).json()
+                cache.save(data)
+            except requests.exceptions.ConnectionError:
+                data = cache.load()
         return data
 
 
@@ -227,9 +233,12 @@ class Pollution():
             data = cache.load()
             print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
-            print_debug("Fetching new data.")
-            data = requests.get(url, timeout=3).json()
-            cache.save(data)
+            try:
+                print_debug("Fetching new data.")
+                data = requests.get(url, timeout=3).json()
+                cache.save(data)
+            except requests.exceptions.ConnectionError:
+                data = cache.load()
         return data
 
     def __aqi_to_desc__(self, value) -> str:
