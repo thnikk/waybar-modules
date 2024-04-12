@@ -87,7 +87,7 @@ def main():
         except IndexError:
             sys.exit(1)
         output = json.dumps({
-            "text": ups.offset_watts(),
+            "text": f" {ups.offset_watts()}W",
             "tooltip": "\n".join([
                 "<span color='#8fa1be' "
                 "font_size='16pt'>UPS stats</span>",
