@@ -86,7 +86,7 @@ def main():
             )
         except IndexError:
             sys.exit(1)
-        output = json.dumps({
+        output = {
             "text": f" {ups.offset_watts()}W",
             "tooltip": "\n".join([
                 "<span color='#8fa1be' "
@@ -98,11 +98,11 @@ def main():
                 f"Charging: {ups.charging()}",
                 f"Battery full: {ups.full()}",
             ])
-        })
+        }
         if not ups.ac():
             output['class'] = 'red'
-        print(output)
-        cache.save(output)
+        print(json.dumps(output))
+        cache.save(json.dumps(output))
         ups.close()
     except hid.HIDException:
         print(json.dumps(cache.load()))
