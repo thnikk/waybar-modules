@@ -1,7 +1,8 @@
 #!/usr/bin/python3 -u
 """
-Description:
-Author:
+Description: Clock module with calendar tooltip that shows events.
+Events are stored locally in ~/.config/calendar-events.json
+Author: thnikk
 """
 from datetime import datetime
 import calendar
@@ -17,11 +18,11 @@ def colorize(text, color):
 
 
 def heading(text, size=16):
-    """ Colorize text """
+    """ Create a heading """
     return f'\n<span font_size="{size}pt">{text}</span>'
 
 
-def highlight(cal, day, color):
+def highlight(cal, day, color) -> str:
     """ Highlight day """
     # Deconstruct
     days = "\n".join(cal.split('\n')[2:])
@@ -32,8 +33,8 @@ def highlight(cal, day, color):
     return cal
 
 
-def add_tag(cal, day, tag):
-    """ Highlight day """
+def add_tag(cal, day, tag) -> str:
+    """ Add a tag to a day """
     # Deconstruct
     days = "\n".join(cal.split('\n')[2:])
     # Substitute
@@ -43,8 +44,8 @@ def add_tag(cal, day, tag):
     return cal
 
 
-def auto_color(event):
-    """ d """
+def auto_color(event) -> str:
+    """ Automatically set color based on words in event """
     colors = {"appointment": "#bf616a", "birthday": "#8fa1b3"}
     for event_lookup, color in colors.items():
         if event_lookup in event.lower():
@@ -52,8 +53,8 @@ def auto_color(event):
     return '#a3be8c'
 
 
-def event_list(events, now):
-    """ d """
+def event_list(events, now) -> str:
+    """ Get list of events as string """
     output = []
     output_dict = {"today": [], "month": []}
     for date, event in events.items():
@@ -73,8 +74,8 @@ def event_list(events, now):
     return "\n".join(output)
 
 
-def generate_calendar(events):
-    """ d """
+def generate_calendar(events) -> str:
+    """ Get full calendar as string for tooltip """
     now = datetime.now()
     day = now.strftime("%d").lstrip('0')
     cal = calendar.month(
@@ -93,7 +94,7 @@ def generate_calendar(events):
     return cal + "\n" + event_list(events, now)
 
 
-def main():
+def main() -> None:
     """ Main function """
 
     # Example events
