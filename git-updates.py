@@ -15,7 +15,7 @@ import tooltip as tt
 
 
 class Git:
-    """ d """
+    """ Git class """
     def __init__(self, path):
         self.path = path
 
@@ -32,14 +32,14 @@ class Git:
     def commits(self):
         """ Get commits """
 
-        def plural(num):
+        def plural(num) -> str:
             """ Pluralize word """
             if num > 1:
                 return 's'
             return ''
 
-        def get_time(input_list):
-            """ d """
+        def get_time(input_list) -> str:
+            """ Get string of x days/minutes/hours ago """
             for value, word in enumerate(['day', 'hour', 'minute']):
                 if input_list[value]:
                     return (
