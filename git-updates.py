@@ -105,7 +105,7 @@ def main():
             f"({colorize(info['date'], '#a3be8c')})"
         )
         for file in info['files']:
-            tooltip.append(f'  {file[:20]}')
+            tooltip.append(f'  {file}')
         tooltip.append('')
 
     if commits:
