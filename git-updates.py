@@ -10,7 +10,8 @@ import json
 import re
 from datetime import datetime, timezone
 import sys
-from common import print_debug, colorize
+from common import print_debug
+import tooltip as tt
 
 
 class Git:
@@ -101,8 +102,8 @@ def main():
     tooltip = []
     for commit, info in commits.items():
         tooltip.append(
-            f"{colorize(commit, '#8fa1be')} - {info['msg']} "
-            f"({colorize(info['date'], '#a3be8c')})"
+            f"{tt.colorize(commit, '#8fa1be')} {info['msg']} "
+            f"({tt.colorize(info['date'], '#a3be8c')})"
         )
         for file in info['files']:
             tooltip.append(f'  {file}')
