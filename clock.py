@@ -10,24 +10,15 @@ import re
 import json
 import time
 import os
+import tooltip as tt
 
 
-def colorize(text, color):
-    """ Colorize text """
-    return f'<span color="{color}">{text}</span>'
-
-
-def heading(text, size=16):
-    """ Create a heading """
-    return f'\n<span font_size="{size}pt">{text}</span>'
-
-
-def highlight(cal, day, color) -> str:
+def highlight(cal, day, color, bg=None) -> str:
     """ Highlight day """
     # Deconstruct
     days = "\n".join(cal.split('\n')[2:])
     # Substitute
-    days = re.sub(day, colorize(day, color), days)
+    days = re.sub(day, tt.span(day, color, bg=bg), days)
     # Reconstruct
     cal = "\n".join(cal.split('\n')[:2] + days.split('\n'))
     return cal
@@ -64,13 +55,13 @@ def event_list(events, now) -> str:
             elif now.day < int(date.split('/')[1]):
                 output_dict['month'].append(f'{date} - {event}')
     if output_dict['today']:
-        output.append(heading('Today'))
+        output.append(tt.heading('Today'))
         for event in output_dict['today']:
-            output.append(colorize(event, auto_color(event)))
+            output.append(tt.span(event, auto_color(event)))
     if output_dict['month']:
-        output.append(heading('Upcoming'))
+        output.append(tt.heading('Upcoming'))
         for event in output_dict['month']:
-            output.append(colorize(event, auto_color(event)))
+            output.append(tt.span(event, auto_color(event)))
     return "\n".join(output)
 
 
@@ -82,13 +73,18 @@ def generate_calendar(events) -> str:
         int(now.strftime("%y")),
         int(now.strftime("%m").lstrip('0'))
     )
-    cal = add_tag(cal, day, 'b')
     for date, event in events.items():
         if str(now.month) == date.split('/')[0]:
-            cal = highlight(cal, date.split('/')[1], auto_color(event))
+            if str(now.day) == date.split('/')[1]:
+                cal = highlight(cal, date.split('/')[1],
+                                "#2b303b", auto_color(event))
+            else:
+                cal = highlight(cal, date.split('/')[1], auto_color(event))
+    if f'{now.month}/{now.day}' not in list(events):
+        cal = highlight(cal, day, "#1c1f26", "#d8dee9")
 
     cal = cal.split('\n')
-    cal[1] = colorize(cal[1], color="#ffffff99")
+    cal[1] = tt.span(cal[1], color="#ffffff99")
     cal = "\n".join(cal).rstrip()
 
     return cal + "\n" + event_list(events, now)
@@ -132,7 +128,7 @@ def main() -> None:
                 if mtime.date() != datetime.now().date():
                     raise ValueError
             except (FileNotFoundError, ValueError):
-                output['text'] += colorize(' ', auto_color(
+                output['text'] += tt.span(' ', auto_color(
                     events[current_date]))
 
         print(json.dumps(output))

@@ -5,7 +5,7 @@ Author: thnikk
 """
 
 
-def span(text, color=None, size=None) -> str:
+def span(text, color=None, size=None, bg=None) -> str:
     """ Colorize text """
     colors = {
         "red": "#bf616a",
@@ -21,9 +21,13 @@ def span(text, color=None, size=None) -> str:
         pass
     if isinstance(size, int):
         size = f"{size}pt"
+    try:
+        bg = colors[bg]
+    except KeyError:
+        pass
     attributes = " ".join(['span'] + [
         f'{key}="{value}"' for key, value in
-        {"color": color, "font_size": size}.items()
+        {"color": color, "font_size": size, "background": bg}.items()
         if value
     ])
     return f'<{attributes}>{text}</span>'
