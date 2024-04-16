@@ -11,7 +11,9 @@ def colorize(text, color_alias) -> str:
         "red": "#bf616a",
         "blue": "8fa1be",
         "green": "a3be8c",
-        "orange": "#d08770"
+        "orange": "#d08770",
+        "purple": "#b48ead",
+        "yellow": "#ebcb8b",
     }
     try:
         color = colors[color_alias]
