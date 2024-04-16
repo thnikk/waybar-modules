@@ -102,8 +102,8 @@ def main():
     tooltip = []
     for commit, info in commits.items():
         tooltip.append(
-            f"{tt.colorize(commit, '#8fa1be')} {info['msg']} "
-            f"({tt.colorize(info['date'], '#a3be8c')})"
+            f"{tt.span(commit, 'blue')} {info['msg']} "
+            f"({tt.span(info['date'], 'green')})"
         )
         for file in info['files']:
             tooltip.append(f'  {file}')

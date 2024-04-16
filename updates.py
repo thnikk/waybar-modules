@@ -10,6 +10,7 @@ import json
 import time
 import os
 from common import print_debug, Cache
+import tooltip as tt
 
 # You can add whatever package manager you want here with the appropriate
 # command. Change the separator and values to get the package and version from
@@ -87,7 +88,7 @@ def get_tooltip(package_managers) -> str:
         if len(packages) == 0:
             continue
         # Package manager name
-        tooltip += f"\n<span color='#8fa1be' font_size='16pt'>{name}</span>\n"
+        tooltip += f"\n{tt.heading(name)}\n"
         for count, package in enumerate(packages):
             if count >= 20:
                 # Only show first 20 packages
@@ -102,12 +103,10 @@ def get_tooltip(package_managers) -> str:
             # If version
             if len(package) > 1:
                 # Version
-                tooltip += f" <span color='#a3be8c'>{package[1]}</span>\n"
+                tooltip += f" {tt.span(package[1], 'green')}\n"
             else:
                 # Otherwise just newline
                 tooltip += "\n"
-    if not tooltip:
-        tooltip = "<span font_size='16pt'>No updates</span>"
     return tooltip.strip()
 
 

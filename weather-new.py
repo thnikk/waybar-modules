@@ -10,6 +10,7 @@ import os
 import argparse
 import requests
 from common import print_debug, Cache
+import tooltip as tt
 
 
 def parse_args():
@@ -282,7 +283,7 @@ def tooltip(om, index, hours) -> str:
         sun_status = f"Sunrise at {om.weather.daily.sunrise}AM\n"
 
     output = (
-        "<span color='#8fa1be' font_size='16pt'>Today</span>\n"
+        tt.heading('Today') + '\n'
         f"City: {om.city}\n"
         f"Description: {om.weather.hourly.description(index)}\n"
         f"Temperature: {om.weather.hourly.temp(index)}\n"
@@ -291,7 +292,7 @@ def tooltip(om, index, hours) -> str:
         f"Wind: {om.weather.hourly.wind(index)} mph\n"
         f"Air quality: {om.pollution.description(index)}\n"
         f"{sun_status}"
-        "\n<span color='#8fa1be' font_size='16pt'>Hourly forecast</span>\n"
+        '\n' + tt.heading('Hourly forecast') + '\n'
     )
 
     hourly_output = []
@@ -308,10 +309,7 @@ def tooltip(om, index, hours) -> str:
         hourly_output = [item[1:] for item in hourly_output]
     output += "\n".join(hourly_output) + "\n"
 
-    output += (
-        "\n<span color='#8fa1be' font_size='16pt'>"
-        "Weekly forecast</span>\n"
-    )
+    output += '\n' + tt.heading('Weekly forecast') + '\n'
 
     for day in range(0, 6):
         abbr = (datetime.now() + timedelta(days=day)).strftime('%A')[:2]

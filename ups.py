@@ -10,6 +10,7 @@ import sys
 import os
 import hid
 from common import Cache
+import tooltip as tt
 
 
 def parse_args():
@@ -89,8 +90,7 @@ def main():
         output = {
             "text": f" {ups.offset_watts()}W",
             "tooltip": "\n".join([
-                "<span color='#8fa1be' "
-                "font_size='16pt'>UPS stats</span>",
+                tt.heading('UPS stats'),
                 f"Runtime: {ups.runtime()} minutes",
                 f"Load: {ups.load_watts()} Watts ({ups.load_percent()}%)",
                 f"Battery: {ups.battery_percent()}%",

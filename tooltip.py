@@ -5,18 +5,30 @@ Author: thnikk
 """
 
 
-def colorize(text, color_alias) -> str:
+def span(text, color=None, size=None) -> str:
     """ Colorize text """
     colors = {
         "red": "#bf616a",
-        "blue": "8fa1be",
-        "green": "a3be8c",
+        "blue": "#8fa1be",
+        "green": "#a3be8c",
         "orange": "#d08770",
         "purple": "#b48ead",
         "yellow": "#ebcb8b",
     }
     try:
-        color = colors[color_alias]
+        color = colors[color]
     except KeyError:
-        color = color_alias
-    return f'<span color="{color}">{text}</span>'
+        pass
+    if isinstance(size, int):
+        size = f"{size}pt"
+    attributes = " ".join(['span'] + [
+        f'{key}="{value}"' for key, value in
+        {"color": color, "font_size": size}.items()
+        if value
+    ])
+    return f'<{attributes}>{text}</span>'
+
+
+def heading(text) -> str:
+    """ Create tooltip heading """
+    return span(text, 'blue', 16)

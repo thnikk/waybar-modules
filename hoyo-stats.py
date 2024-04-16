@@ -9,6 +9,7 @@ import configparser
 import argparse
 import genshin
 from common import print_debug
+import tooltip as tt
 
 cache_file = os.path.expanduser("~/.cache/hoyo-stats.json")
 config_file = os.path.expanduser("~/.config/hoyo-stats.ini")
@@ -68,8 +69,15 @@ async def generate_cache(config, game):
     # Get current time
     time_now = datetime.now(timezone.utc)
 
-    with open(cache_file, encoding='utf-8') as json_file:
-        cache = json.load(json_file)
+    for x in range(0, 3):  # pylint: disable=unused-variable
+        try:
+            with open(cache_file, encoding='utf-8') as json_file:
+                cache = json.load(json_file)
+                break
+        except json.decoder.JSONDecodeError:
+            print_debug(
+                "Couldn't decode json cache, waiting and trying again.")
+            time.sleep(3)
 
     try:
         if game == 'genshin':
@@ -157,9 +165,7 @@ def genshin_module(cache):
     output['text'] = f" {cache['Resin']}"
 
     cache.pop('timestamp')
-    output['tooltip'] = (
-        "<span color='#8fa1be' font_size='16pt'>"
-        "Genshin Stats</span>\n") + '\n'.join(
+    output['tooltip'] = tt.heading('Genshin Stats') + '\n' + '\n'.join(
             f'{key}: {value}' for key, value in cache.items()
     )
     return output
@@ -177,9 +183,7 @@ def hsr_module(cache):
     output['text'] = f" {cache['Trailblaze power']}"
 
     cache.pop('timestamp')
-    output['tooltip'] = (
-        "<span color='#8fa1be' font_size='16pt'>"
-        "HSR Stats</span>\n") + '\n'.join(
+    output['tooltip'] = tt.heading('HSR Stats') + '\n' + '\n'.join(
             f'{key}: {value}' for key, value in cache.items()
     )
     return output
