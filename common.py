@@ -12,6 +12,13 @@ import json
 import requests
 
 
+def ellipse(string, length=20) -> str:
+    """ Ellipse string past length """
+    if len(string) > length:
+        return f"{string[:length-3]}..."
+    return string[:length]
+
+
 def get_request(url, retries=3, timeout=3) -> dict:
     """ Auto-retry requests """
     for x in range(1, retries):

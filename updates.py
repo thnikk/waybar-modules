@@ -9,7 +9,7 @@ import concurrent.futures
 import json
 import time
 import os
-from common import print_debug, Cache
+from common import print_debug, Cache, ellipse
 import tooltip as tt
 
 # You can add whatever package manager you want here with the appropriate
@@ -82,32 +82,20 @@ def get_output(command, separator, values, empty_error) -> list:
 
 def get_tooltip(package_managers) -> str:
     """ Generate tooltip string """
-    tooltip = ""
+    tooltip = []
     for name, packages in package_managers.items():
         # Skip if no packages
         if len(packages) == 0:
             continue
-        # Package manager name
-        tooltip += f"\n{tt.heading(name)}\n"
-        for count, package in enumerate(packages):
-            if count >= 20:
-                # Only show first 20 packages
-                tooltip += f"{len(packages) - count} more...\n"
-                break
-            # Package name
-            if len(package[0]) > 20:
-                tooltip += f"{package[0][:17]}..."
-            else:
-                tooltip += f"{package[0]}"
-            tooltip += " " * (20 - len(package[0]))
-            # If version
-            if len(package) > 1:
-                # Version
-                tooltip += f" {tt.span(package[1], 'green')}\n"
-            else:
-                # Otherwise just newline
-                tooltip += "\n"
-    return tooltip.strip()
+        # Add an extra list element to create a newline
+        if tooltip and packages:
+            tooltip.append('')
+        # Create package list
+        tooltip += [tt.heading(name)] + [
+            f"{ellipse(package): <20} {tt.span(version[:10], 'green')}"
+            for package, version in packages
+        ][:30]
+    return "\n".join(tooltip)
 
 
 def get_total(package_managers) -> int:
