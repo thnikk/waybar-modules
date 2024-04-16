@@ -5,11 +5,10 @@ Shows sgv on bar and time since last received value and delta in the tooltip
 Author: thnikk
 """
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import configparser
 import sys
-import pytz
 import requests
 from common import print_debug, Cache
 
@@ -75,7 +74,7 @@ def main():
     delta = data[0]["delta"]
     direction = data[0]["direction"]
     date = datetime.strptime(data[0]["dateString"], "%Y-%m-%dT%H:%M:%S.%f%z")
-    now = datetime.now(pytz.utc)
+    now = datetime.now(timezone.utc)
 
     since_last = int((now - date).total_seconds() / 60)
 
