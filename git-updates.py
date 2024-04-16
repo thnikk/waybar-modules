@@ -40,7 +40,7 @@ class Git:
 
         def get_time(input_list) -> str:
             """ Get string of x days/minutes/hours ago """
-            for value, word in enumerate(['day', 'hour', 'minute']):
+            for value, word in enumerate(['day', 'hour', 'minute', 'second']):
                 if input_list[value]:
                     return (
                         f"{input_list[value]} "
@@ -73,9 +73,10 @@ class Git:
                 date = ':'.join(line.split(":")[1:]).strip()
                 delta = datetime.now(timezone.utc) - datetime.strptime(
                     date, '%a %b %d %H:%M:%S %Y %z')
-                dhm = [
-                    delta.days, delta.seconds // 60 // 60, delta.seconds // 60]
-                output[chash]['date'] = get_time(dhm)
+                dhms = [
+                    delta.days, delta.seconds // 60 // 60,
+                    delta.seconds // 60, delta.seconds]
+                output[chash]['date'] = get_time(dhms)
             elif re.match('^ ', line):
                 output[chash]['msg'] = line.strip().replace('&', 'and')
             else:
