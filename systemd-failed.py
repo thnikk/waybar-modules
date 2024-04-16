@@ -6,6 +6,7 @@ Author: thnikk
 from subprocess import run
 import json
 import argparse
+import tooltip as tt
 
 
 def parse_args():
@@ -22,20 +23,6 @@ def get_output(command) -> list:
         command, check=True, capture_output=True
     ).stdout.decode('utf-8').strip().splitlines()
     return [line.split()[1] for line in output]
-
-
-def style(input_string, color=None, size=None, bg=None) -> str:
-    """ Style text """
-    input_string = str(input_string)
-    output = ["<span"]
-    if color:
-        output.append(f"color='#{color}'")
-    if size:
-        output.append(f"font_size='{size}pt'")
-    if bg:
-        output.append(f"background_color='#{bg}'")
-    output.append('>')
-    return " ".join(output) + input_string + "</span>"
 
 
 def filter_services(services, blacklist):
@@ -69,7 +56,7 @@ def main():
         output['class'] = 'alert'
         output['text'] = f' {num_failed}'
         output['tooltip'] = (
-            f'{style("Systemd failed units", size=16, color="8fa1be")}\n\n')
+            f'{tt.heading("Systemd failed units")}\n\n')
         for name, failed_list in {
             'System': failed_system, "User": failed_user
         }.items():
