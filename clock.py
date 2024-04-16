@@ -61,7 +61,7 @@ def event_list(events, now) -> str:
         if str(now.month) == date.split('/')[0]:
             if str(now.day) == date.split('/')[1]:
                 output_dict['today'].append(event)
-            else:
+            elif now.day < int(date.split('/')[1]):
                 output_dict['month'].append(f'{date} - {event}')
     if output_dict['today']:
         output.append(heading('Today'))
@@ -117,7 +117,7 @@ def main() -> None:
         current_time = datetime.now().strftime("%I:%M %m/%d")
         output = {
             "text": f" {current_time}",
-            "tooltip": generate_calendar(events)
+            "tooltip": generate_calendar(events).rstrip()
         }
 
         current_date = f'{datetime.now().month}/{datetime.now().day}'
