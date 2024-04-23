@@ -210,6 +210,10 @@ class Daily():
         """ Get description of weather """
         return lookup(self.code(index), 1)
 
+    def icon(self, index, night=False):
+        """ Get icon """
+        return lookup(self.code(index), 0, night)
+
     def low(self, index) -> int:
         """ Get min temperature """
         return round(self.lows[index])
@@ -322,6 +326,75 @@ def tooltip(om, index, hours) -> str:
     return output.strip()
 
 
+def widget(om, index, hours, night) -> dict:
+    """ Generate tooltip """
+
+    hourly = om.weather.hourly
+    night_now = (
+        om.weather.daily.sunrise > datetime.now().hour
+        or datetime.now().hour > om.weather.daily.sunset) and night
+    output = {
+        "City": om.city,
+        "Today": {
+            "icon-class": "icon-large",
+            "info": [{
+                "icon": hourly.icon(index, night_now),
+                "description": hourly.description(index),
+                "temperature": hourly.temp(index),
+                "feels_like": hourly.feelslike(index),
+                "humidity": hourly.humidity(index),
+                "wind": hourly.wind(index),
+                "quality": om.pollution.description(index)
+            }]
+        },
+        "Hourly": {
+            "icon-class": "icon-small"
+        },
+        "Daily": {
+            "icon-class": "icon-medium"
+        }
+    }
+
+    if om.weather.daily.sunset > index > om.weather.daily.sunrise:
+        output["Today"]["info"][0]["sunset"] = om.weather.daily.sunset - 12
+    else:
+        output["Today"]["info"][0]["sunrise"] = om.weather.daily.sunrise
+
+    hourly_output = []
+    for hour in range(1, (hours or 5) + 1):
+        hour_index = int(
+            (datetime.now() + timedelta(hours=hour)).strftime('%H'))
+        text = (datetime.now() + timedelta(hours=hour)).strftime("%l%P")
+        night_hour = (
+            om.weather.daily.sunrise > hour_index
+            or hour_index > om.weather.daily.sunset) and night
+        hourly_output.append({
+            "icon": om.weather.hourly.icon(hour_index, night_hour),
+            "description": om.weather.hourly.description(hour_index),
+            "time": text,
+            "temperature": om.weather.hourly.temp(hour_index)
+        })
+    output["Hourly"]["info"] = hourly_output
+
+    daily_output = []
+    for day in range(0, 5):
+        abbr = (datetime.now() + timedelta(days=day)).strftime('%A')
+        daily_output.append({
+            "time": abbr,
+            "high": om.weather.daily.high(day),
+            "low": om.weather.daily.low(day),
+            "wind": om.weather.daily.wind(day),
+            "description": om.weather.daily.description(day),
+            "icon": om.weather.daily.icon(day)
+        })
+    output["Daily"]["info"] = daily_output
+    with open(
+        os.path.expanduser('~/.cache/weather-widget.json'),
+        'w', encoding='utf-8'
+    ) as file:
+        file.write(json.dumps(output, indent=4))
+
+
 def main():
     """ Main function """
     args = parse_args()
@@ -331,6 +404,8 @@ def main():
     night = (
         om.weather.daily.sunrise > hour_now
         or hour_now > om.weather.daily.sunset) and args.n
+
+    widget(om, hour_now, args.f, args.n)
 
     print(json.dumps(
         {
