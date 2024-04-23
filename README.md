@@ -109,6 +109,7 @@ Shows weather using the OpenMeteo API. Accepts a zip code as location and has an
     "custom/weather-new": {
         "format": "{}",
         "exec": "~/.local/bin/bar/weather-new.py -n 94002",
+        "on-click": "~/.local/bin/bar/widgets/toggle-weather.sh",
         "return-type": "json",
         "interval": 600
     },
