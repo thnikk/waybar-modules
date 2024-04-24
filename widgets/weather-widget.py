@@ -18,7 +18,7 @@ import common as c
 class Widget:
     """ Widget class"""
     def __init__(self):
-        self.window = Gtk.Window()
+        self.window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.window.get_style_context().add_class('window')
 
     def css(self, file):
@@ -45,10 +45,6 @@ class Widget:
 
         today_left = c.box('v')
         widget.add(c.label(cache['City'], style='city'))
-        # temp_box = c.box('h')
-        # temp_box.add(c.label(today['temperature'], 'temp-label'))
-        # temp_box.add(c.label(today['icon'], 'temp-icon'))
-        # today_left.add(temp_box)
         temp = c.label(
             f"{today['temperature']}° {today['icon']}", 'today-weather')
         today_left.add(temp)
@@ -68,9 +64,7 @@ class Widget:
 
         today_box.pack_start(today_left, False, False, 0)
 
-        # Add thing
         sun_box = c.box('v')
-
         try:
             sun_box.add(c.label(f' {today["sunset"]}pm', 'sun'))
         except KeyError:
