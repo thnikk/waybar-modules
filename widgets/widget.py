@@ -277,7 +277,10 @@ class Widget:
 
         GtkLayerShell.set_namespace(self.window, 'widget')
 
-        if self.monitor:
+        try:
+            if not self.monitor:
+                raise ValueError
+
             monitors = [
                 info['name'] for info in
                 json.loads(check_output(["swaymsg", "-t", "get_outputs"]))
@@ -288,6 +291,8 @@ class Widget:
                 self.window,
                 Gdk.Display.get_monitor(display, monitors.index(self.monitor))
             )
+        except ValueError:
+            pass
 
         self.window.show_all()
         self.window.connect('destroy', Gtk.main_quit)
