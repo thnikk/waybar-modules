@@ -71,8 +71,8 @@ def lookup(code, mode, night=False):
     """ Get description for weather code """
     weather_lookup = {
         0:  ["", "Clear"],
-        1:  ["", "Mostly clear"],
-        2:  ["", "Partly cloudy"],
+        1:  ["", "Mostly clear"],
+        2:  ["", "Partly cloudy"],
         3:  ["", "Overcast"],
         45: ["", "Fog"],
         48: ["", "Depositing rime fog"],
@@ -101,6 +101,8 @@ def lookup(code, mode, night=False):
     }
     if night:
         weather_lookup[0][0] = ""
+        weather_lookup[1][0] = ""
+        weather_lookup[2][0] = ""
     return weather_lookup[code][mode]
 
 
