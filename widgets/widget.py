@@ -61,6 +61,8 @@ class Widget:
         self.window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.window.get_style_context().add_class('window')
         self.monitor = monitor
+        css_path = "/".join(__file__.split('/')[:-1]) + '/style.css'
+        self.css(css_path)
 
     def css(self, file):
         """ Load CSS from file """
@@ -118,7 +120,9 @@ class Widget:
         for hour in cache['Hourly']['info']:
             hour_box = c.box('v', style='hour-box')
             hour_box.add(c.label(f"{hour['temperature']}°"))
-            hour_box.add(c.label(hour['icon'], style='icon-small'))
+            icon = c.label(hour['icon'], style='icon-small')
+            icon.props.tooltip_text = hour['description']
+            hour_box.add(icon)
             hour_box.add(c.label(hour['time']))
             if hour != cache['Hourly']['info']:
                 sep = Gtk.Separator.new(Gtk.Orientation.VERTICAL)
@@ -131,8 +135,9 @@ class Widget:
             day_box.add(c.label(day['time']))
             day_box.pack_end(
                 c.label(f"{day['high']}° / {day['low']}°"), False, False, 0)
-            day_box.pack_end(
-                c.label(day['icon']), False, False, 100)
+            icon = c.label(day['icon'])
+            icon.props.tooltip_text = day['description']
+            day_box.pack_end(icon, False, False, 100)
             if day != cache['Daily']['info']:
                 sep = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
                 daily_box.add(sep)
