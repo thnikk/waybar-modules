@@ -177,17 +177,18 @@ class Widget:
         current_month = cal_list(now.year, now.month)
         next_month = cal_list(*diff_month(now.year, now.month, 1), 'old')[:2]
 
-        events = {
-            "4/3": "UFO sighting",
-            "4/21": "Dentist appointment",
-            "4/28": "Birthday"
-        }
-
-        with open(
-            os.path.expanduser('~/.config/calendar-events.json'),
-            'r', encoding='utf-8'
-        ) as file:
-            events = json.loads(file.read())
+        try:
+            with open(
+                os.path.expanduser('~/.config/calendar-events.json'),
+                'r', encoding='utf-8'
+            ) as file:
+                events = json.loads(file.read())
+        except FileNotFoundError:
+            events = {
+                "4/3": "UFO sighting",
+                "4/21": "Dentist appointment",
+                "4/28": "Birthday"
+            }
 
         for count, month in enumerate([last_month, current_month, next_month]):
             for week in month:
