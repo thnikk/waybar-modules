@@ -60,8 +60,7 @@ def parse_args() -> argparse.ArgumentParser:
 
 def calendar_widget():
     """ Draw calendar """
-    widget = c.box('v', spacing=20)
-    widget.get_style_context().add_class("widget")
+    widget = c.box('v', style='widget', spacing=20)
 
     now = datetime.now()
 
@@ -93,6 +92,19 @@ def calendar_widget():
                 "Set up events in ~/.config/calendar-events.json"
         }
 
+    style_events(last_month, current_month, next_month, events, now)
+
+    cal_box.add(draw_calendar(last_month, current_month, next_month))
+    cal_section.add(cal_box)
+    widget.add(cal_section)
+
+    widget.add(draw_events(now, events))
+
+    return widget
+
+
+def style_events(last_month, current_month, next_month, events, now):
+    """ Add style to events """
     for count, month in enumerate([last_month, current_month, next_month]):
         for week in month:
             for day, styles in week:
@@ -107,6 +119,9 @@ def calendar_widget():
                     styles.append('event')
                     styles.append(event_style)
 
+
+def draw_calendar(last_month, current_month, next_month):
+    """ Draw calendar"""
     combined_month = []
     if len(last_month[-1]) < 7:
         combined_month += last_month[:-1]
@@ -129,11 +144,12 @@ def calendar_widget():
             day_label.get_style_context().add_class('day')
             line.add(day_label)
         lines.add(line)
+    return lines
 
-    cal_box.add(lines)
-    cal_section.add(cal_box)
-    widget.add(cal_section)
 
+def draw_events(now, events):
+    """ Draw events """
+    events_section = c.box('v', spacing=20)
     for offset, month in enumerate(['Last', 'This', 'Next']):
         month_events = {
             date: event for date, event in events.items()
@@ -151,21 +167,20 @@ def calendar_widget():
             for date, event in month_events.items():
                 event_box = c.box('h', style='event-box', spacing=10)
                 event_dot = c.label('', style='event-dot')
-                event_day = c.label(date, style='event-day')
-                event_label = c.label(event, wrap=20)
                 event_style = event_lookup(event)
                 event_dot.get_style_context().add_class(event_style)
                 event_box.pack_start(event_dot, False, True, 0)
-                event_box.pack_start(event_day, False, True, 0)
-                event_box.pack_start(event_label, False, True, 0)
+                event_box.pack_start(
+                    c.label(date, style='event-day'), False, True, 0)
+                event_box.pack_start(
+                    c.label(event, wrap=20), False, True, 0)
                 events_box.add(event_box)
 
                 if date != list(month_events)[-1]:
                     events_box.add(c.sep('h'))
             event_section.add(events_box)
-            widget.add(event_section)
-
-    return widget
+            events_section.add(event_section)
+    return events_section
 
 
 def main():
