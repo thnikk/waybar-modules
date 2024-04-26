@@ -52,12 +52,41 @@ def box(orientation, spacing=0, style=None):
     return obox
 
 
-def label(input_text, style=None):
+def sep(orientation, style=None):
+    """ Separator """
+    if orientation == 'v':
+        separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+    if orientation == 'h':
+        separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+    if style:
+        separator.get_style_context().add_class(style)
+    return separator
+
+
+def label(input_text, style=None, va=None, ha=None, he=False):
     """ Create label """
     text = Gtk.Label()
     text.set_text(f'{input_text}')
     if style:
         text.get_style_context().add_class(style)
+
+    options = {
+        "fill": Gtk.Align.FILL, "start": Gtk.Align.START,
+        "end": Gtk.Align.END, "center": Gtk.Align.CENTER
+    }
+
+    try:
+        text.props.valign = options[va]
+    except KeyError:
+        pass
+
+    try:
+        text.props.halign = options[ha]
+    except KeyError:
+        pass
+    if isinstance(he, bool):
+        text.props.hexpand = he
+
     return text
 
 
