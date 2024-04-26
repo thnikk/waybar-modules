@@ -63,7 +63,7 @@ def sep(orientation, style=None):
     return separator
 
 
-def label(input_text, style=None, va=None, ha=None, he=False):
+def label(input_text, style=None, va=None, ha=None, he=False, wrap=None):
     """ Create label """
     text = Gtk.Label()
     text.set_text(f'{input_text}')
@@ -86,6 +86,10 @@ def label(input_text, style=None, va=None, ha=None, he=False):
         pass
     if isinstance(he, bool):
         text.props.hexpand = he
+
+    if isinstance(wrap, int):
+        text.props.wrap = True
+        text.set_max_width_chars(wrap)
 
     return text
 
@@ -120,32 +124,3 @@ def iconify(dictionary, exclude=None, include=None):
         except KeyError:
             pass
     return output
-
-
-def make_section(
-    days, icon_class='icon-large', style='section-box'
-) -> Gtk.Box:
-    """ thing """
-    section_box = box('h', 10, style)
-    for day in days:
-        day_box = box('v', 10, 'day-box')
-        main_box = box('h', 20, 'main-box')
-        main_box.add(label(day['icon'], icon_class))
-
-        icon_list = iconify(
-            day, exclude=['quality', 'sunset'])
-        icon_lines = v_lines(icon_list)
-        main_box.add(icon_lines)
-        day_box.add(main_box)
-
-        bottom_list = iconify(
-            day, include=['quality', 'sunset'])
-        bottom_lines = h_lines(bottom_list)
-        day_box.add(bottom_lines)
-
-        section_box.pack_start(day_box, True, False, 0)
-        if day != days[-1]:
-            sep = Gtk.Separator.new(Gtk.Orientation.VERTICAL)
-            section_box.add(sep)
-
-    return section_box

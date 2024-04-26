@@ -8,11 +8,8 @@ import json
 from datetime import datetime
 import calendar
 import os
-import gi
 from widget import Widget
 import common as c
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 
 
 def diff_month(year, month, diff):
@@ -61,9 +58,9 @@ def parse_args() -> argparse.ArgumentParser:
     return parser.parse_args()
 
 
-def calendar_widget(window):
+def calendar_widget():
     """ Draw calendar """
-    widget = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+    widget = c.box('v', spacing=20)
     widget.get_style_context().add_class("widget")
 
     now = datetime.now()
@@ -92,9 +89,8 @@ def calendar_widget(window):
             events = json.loads(file.read())
     except FileNotFoundError:
         events = {
-            "4/3": "UFO sighting",
-            "4/21": "Dentist appointment",
-            "4/28": "Birthday"
+            f"{now.month}/{now.day}":
+                "Set up events in ~/.config/calendar-events.json"
         }
 
     for count, month in enumerate([last_month, current_month, next_month]):
@@ -156,7 +152,7 @@ def calendar_widget(window):
                 event_box = c.box('h', style='event-box', spacing=10)
                 event_dot = c.label('', style='event-dot')
                 event_day = c.label(date, style='event-day')
-                event_label = c.label(event)
+                event_label = c.label(event, wrap=20)
                 event_style = event_lookup(event)
                 event_dot.get_style_context().add_class(event_style)
                 event_box.pack_start(event_dot, False, True, 0)
@@ -164,13 +160,12 @@ def calendar_widget(window):
                 event_box.pack_start(event_label, False, True, 0)
                 events_box.add(event_box)
 
-                if day is not list(events)[-1]:
-                    sep = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
-                    events_box.add(sep)
+                if date != list(month_events)[-1]:
+                    events_box.add(c.sep('h'))
             event_section.add(events_box)
             widget.add(event_section)
 
-    window.window.add(widget)
+    return widget
 
 
 def main():
@@ -179,7 +174,7 @@ def main():
     widget = Widget(args.output)
     css_path = "/".join(__file__.split('/')[:-1]) + '/style.css'
     widget.css(css_path)
-    calendar_widget(widget)
+    widget.add(calendar_widget())
     widget.start()
 
 
