@@ -29,6 +29,9 @@ class Widget:
         style_context.add_provider_for_screen(
             screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
+    def add(self, box):
+        self.window.add(box)
+
     def start(self):
         """ Start bar """
         GtkLayerShell.init_for_window(self.window)

@@ -6,11 +6,8 @@ Author: thnikk
 import argparse
 import json
 import os
-import gi
 from widget import Widget
 import common as c
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 
 
 def parse_args() -> argparse.ArgumentParser:
@@ -20,7 +17,7 @@ def parse_args() -> argparse.ArgumentParser:
     return parser.parse_args()
 
 
-def weather_widget(window, cache_file):
+def weather_widget(cache_file):
     """ Weather widget """
 
     widget = c.box('v', style='widget', spacing=20)
@@ -75,10 +72,9 @@ def weather_widget(window, cache_file):
         icon.props.tooltip_text = hour['description']
         hour_box.add(icon)
         hour_box.add(c.label(hour['time']))
-        if hour != cache['Hourly']['info']:
-            sep = Gtk.Separator.new(Gtk.Orientation.VERTICAL)
-            hourly_box.add(sep)
         hourly_box.pack_start(hour_box, True, False, 0)
+        if hour != cache['Hourly']['info'][-1]:
+            hourly_box.add(c.sep('v'))
     hourly_container.add(hourly_box)
     widget.add(hourly_container)
 
@@ -93,22 +89,21 @@ def weather_widget(window, cache_file):
             c.label(f"{day['high']}° / {day['low']}°"), False, False, 0)
         icon = c.label(day['icon'])
         icon.props.tooltip_text = day['description']
-        day_box.pack_end(icon, False, False, 100)
-        if day != cache['Daily']['info']:
-            sep = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
-            daily_box.add(sep)
+        day_box.set_center_widget(icon)
+
         daily_box.add(day_box)
+        if day != cache['Daily']['info'][-1]:
+            daily_box.add(c.sep('h'))
     daily_container.add(daily_box)
     widget.add(daily_container)
-
-    window.window.add(widget)
+    return widget
 
 
 def main():
     """ Weather widget """
     args = parse_args()
     widget = Widget(args.output)
-    weather_widget(widget, '~/.cache/weather-widget.json')
+    widget.add(weather_widget('~/.cache/weather-widget.json'))
     widget.start()
 
 
