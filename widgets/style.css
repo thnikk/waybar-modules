@@ -22,8 +22,8 @@
 	padding: 10px;
 	border-radius: 20px;
 	border: 1px solid @gray;
-	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-	margin: 10px;
+	/* box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2); */
+	/* margin: 10px; */
 	font-size: 16px;
 }
 
@@ -116,8 +116,8 @@ separator {
 }
 
 .today {
-	background: @gray;
-	border: 1px solid @gray;
+	background: rgba(255,255,255,0.1);
+	border: 1px solid rgba(255,255,255,0.1);
 	border-radius: 5px;
 }
 
@@ -158,6 +158,15 @@ separator {
 .test-box {
 	min-width: 300px;
 	min-height: 300px;
+}
+
+.none {
+	border: none;
+	padding: 0;
+	margin: 0;
+	background: none;
+	box-shadow: none;
+	text-shadow: none;
 }
 
 .green { color: @green; }
