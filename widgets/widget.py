@@ -39,8 +39,8 @@ class Widget:
         GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.BOTTOM, 1)
         GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.RIGHT, 1)
 
-        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.BOTTOM, 0)
-        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.RIGHT, 0)
+        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.BOTTOM, 10)
+        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.RIGHT, 10)
 
         GtkLayerShell.set_namespace(self.window, 'widget')
 
