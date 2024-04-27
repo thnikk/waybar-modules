@@ -23,6 +23,12 @@ def update_widget():
     label = c.label('Updates', style='heading')
     main_box.add(label)
 
+    urls = {
+        "Pacman": "https://archlinux.org/packages/",
+        "AUR": "https://aur.archlinux.org/packages/",
+        "Flatpak": "https://flathub.org/apps/search?q=",
+    }
+
     with open(
         os.path.expanduser('~/.cache/updates.json'), 'r', encoding='utf-8'
     ) as file:
@@ -41,9 +47,13 @@ def update_widget():
                 [f'{len(packages) - max_len} more...', '']]
         for package in packages:
             package_box = c.box('h', style='event-box', spacing=20)
-            package_label = c.button(
-                package[0], style='none',
-                url=f'https://archlinux.org/packages/{package[0]}')
+            package_label = c.button(package[0], style='none')
+            try:
+                package_label.connect(
+                    'clicked', c.click_link,
+                    f'{urls[manager]}{package[0]}')
+            except KeyError:
+                pass
             package_box.pack_start(package_label, False, False, 0)
             package_box.pack_end(
                 c.label(package[1], style='green'), False, False, 0)
