@@ -11,7 +11,7 @@ def parse_args() -> argparse.ArgumentParser:
     """ Parse arguments """
     parser = argparse.ArgumentParser()
     parser.add_argument('script')
-    parser.add_argument('-o', '--output', type=str)
+    parser.add_argument('args', nargs=argparse.REMAINDER)
     return parser.parse_args()
 
 
@@ -60,10 +60,7 @@ def main():
             if args.script in arg:
                 check = True
     if not check:
-        if args.output:
-            Popen([script_path, '-o', args.output])
-        else:
-            Popen([script_path])
+        Popen([script_path] + args.args)
 
 
 if __name__ == "__main__":
