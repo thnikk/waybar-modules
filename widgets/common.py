@@ -3,10 +3,30 @@
 Description:
 Author:
 """
+from subprocess import Popen
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GtkLayerShell
+
+
+def scroll(width=-1, height=-1, style=None):
+    """ Create scrollable window """
+    window = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+    window.set_max_content_width(width)
+    window.set_min_content_width(width)
+    window.set_min_content_height(height)
+    window.set_max_content_height(height)
+    window.set_propagate_natural_width(True)
+    window.set_shadow_type(Gtk.ShadowType.NONE)
+    # window.set_overlay_scrolling(False)
+    window.set_policy(
+        hscrollbar_policy=Gtk.PolicyType.NEVER,
+        vscrollbar_policy=Gtk.PolicyType.ALWAYS
+    )
+    if style:
+        window.get_style_context().add_class(style)
+    return window
 
 
 def v_lines(lines, right=False, style=None) -> Gtk.Box:
@@ -61,6 +81,22 @@ def sep(orientation, style=None):
     if style:
         separator.get_style_context().add_class(style)
     return separator
+
+
+def click_link(module, url):
+    """ Click action """
+    del module
+    Popen(['xdg-open', url])
+
+
+def button(input_text, style=None, url=None):
+    """ Button """
+    __button__ = Gtk.Button.new_with_label(input_text)
+    if style:
+        __button__.get_style_context().add_class(style)
+    if url:
+        __button__.connect('clicked', click_link, url)
+    return __button__
 
 
 def label(input_text, style=None, va=None, ha=None, he=False, wrap=None):
