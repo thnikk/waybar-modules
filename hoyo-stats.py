@@ -78,12 +78,14 @@ async def generate_cache(config, game):
             print_debug(
                 "Couldn't decode json cache, waiting and trying again.")
             time.sleep(3)
+        except FileNotFoundError:
+            cache = {}
 
     try:
         if game == 'genshin':
             try:
                 if old(
-                    datetime.fromtimestamp(cache['Genshin']['timestamp']), 5
+                    datetime.fromtimestamp(cache['genshin']['timestamp']), 5
                 ):
                     raise ValueError
             except (KeyError, ValueError):
@@ -94,7 +96,9 @@ async def generate_cache(config, game):
                         config["settings"]["genshin_id"])
                 com_prog = genshin_notes.completed_commissions + \
                     int(genshin_notes.claimed_commission_reward)
-                cache['Genshin'] = {
+                cache['genshin'] = {
+                    "Name": "Genshin Impact",
+                    "Icon": "",
                     "Resin": genshin_notes.current_resin,
                     "Until next 40": time_diff(
                         time_now, genshin_notes.resin_recovery_time, 8),
@@ -102,17 +106,15 @@ async def generate_cache(config, game):
                     "Remaining boss discounts":
                     genshin_notes.remaining_resin_discounts,
                     "Realm currency": genshin_notes.current_realm_currency,
-                    "Abyss progress": (
-                        f"{genshin_user.abyss.current.max_floor} "
-                        f"{genshin_user.abyss.current.total_stars}"
-                        ),
+                    "Abyss progress": genshin_user.abyss.current.max_floor,
+                    "Abyss stars": genshin_user.abyss.current.total_stars,
                     "timestamp": datetime.timestamp(time_now)
                 }
 
         if game == 'hsr':
             try:
                 if old(
-                    datetime.fromtimestamp(cache['HSR']['timestamp']), 5
+                    datetime.fromtimestamp(cache['hsr']['timestamp']), 5
                 ):
                     raise ValueError
             except (KeyError, ValueError):
@@ -124,8 +126,10 @@ async def generate_cache(config, game):
                         config["settings"]["hsr_id"])
                 moc_floors = [floor.name for floor in hsr_user.floors]
                 daily_prog = hsr_notes.current_train_score // 100
-                cache["HSR"] = {
-                    "Trailblaze power": hsr_notes.current_stamina,
+                cache["hsr"] = {
+                    "Name": "Honkai Star Rail",
+                    "Icon": "",
+                    "Resin": hsr_notes.current_stamina,
                     "Until next 40":
                     time_diff(time_now, hsr_notes.stamina_recovery_time, 6),
                     "Dailies completed": f"{daily_prog}/5",
@@ -134,8 +138,8 @@ async def generate_cache(config, game):
                     "SU weekly score":
                     f"{hsr_notes.current_rogue_score}/"
                     f"{hsr_notes.max_rogue_score}",
-                    "MoC progress":
-                    f"{len(moc_floors)} {hsr_user.total_stars}",
+                    "Abyss progress": len(moc_floors),
+                    "Abyss stars": hsr_user.total_stars,
                     "timestamp": datetime.timestamp(time_now)
                 }
     except genshin.errors.GenshinException:
@@ -162,11 +166,12 @@ def genshin_module(cache):
     if not dailies_completed and realm_currency_capped:
         output['class'] = 'orange'
 
-    output['text'] = f" {cache['Resin']}"
+    output['text'] = f"{cache['Icon']} {cache['Resin']}"
 
     cache.pop('timestamp')
     output['tooltip'] = tt.heading('Genshin Stats') + '\n' + '\n'.join(
             f'{key}: {value}' for key, value in cache.items()
+            if key not in ["Name", "Icon"]
     )
     return output
 
@@ -180,11 +185,12 @@ def hsr_module(cache):
     if not dailies_completed:
         output['class'] = 'red'
 
-    output['text'] = f" {cache['Trailblaze power']}"
+    output['text'] = f"{cache['Icon']} {cache['Resin']}"
 
     cache.pop('timestamp')
     output['tooltip'] = tt.heading('HSR Stats') + '\n' + '\n'.join(
             f'{key}: {value}' for key, value in cache.items()
+            if key not in ["Name", "Icon"]
     )
     return output
 
@@ -196,9 +202,9 @@ def main():
     cache = asyncio.run(generate_cache(config, args.game))
 
     if args.game == "genshin":
-        output = genshin_module(cache['Genshin'])
+        output = genshin_module(cache['genshin'])
     elif args.game == "hsr":
-        output = hsr_module(cache['HSR'])
+        output = hsr_module(cache['hsr'])
     else:
         output = {"text": "Invalid game specified"}
 
