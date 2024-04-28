@@ -40,11 +40,8 @@ def update_widget():
         manager_box = c.box('v', spacing=10)
         heading = c.label(manager, style='title', ha='start')
         manager_box.add(heading)
-        packages_box = c.box('v', style='events-box')
-        max_len = 12
-        if len(packages) > max_len:
-            packages = packages[:max_len-1] + [
-                [f'{len(packages) - max_len} more...', '']]
+        packages_box = c.box('v')
+        scroll_box = c.scroll(0, 348)
         for package in packages:
             package_box = c.box('h', style='event-box', spacing=20)
             package_label = c.button(package[0], style='none')
@@ -60,6 +57,15 @@ def update_widget():
             packages_box.add(package_box)
             if package != packages[-1]:
                 packages_box.pack_start(c.sep('h'), 1, 1, 0)
+
+        if len(packages) > 10:
+            scroll_box.get_style_context().add_class('events-box')
+            scroll_box.add(packages_box)
+            manager_box.add(scroll_box)
+        else:
+            packages_box.get_style_context().add_class('events-box')
+            manager_box.add(packages_box)
+
         manager_box.add(packages_box)
         main_box.add(manager_box)
 

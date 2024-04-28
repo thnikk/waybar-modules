@@ -10,7 +10,7 @@ gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GtkLayerShell
 
 
-def scroll(width=-1, height=-1, style=None):
+def scroll(width=0, height=0, style=None):
     """ Create scrollable window """
     window = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
     window.set_max_content_width(width)
@@ -18,11 +18,18 @@ def scroll(width=-1, height=-1, style=None):
     window.set_min_content_height(height)
     window.set_max_content_height(height)
     window.set_propagate_natural_width(True)
-    window.set_shadow_type(Gtk.ShadowType.NONE)
-    # window.set_overlay_scrolling(False)
+    window.set_propagate_natural_height(True)
+    if width:
+        hs = Gtk.PolicyType.ALWAYS
+    else:
+        hs = Gtk.PolicyType.NEVER
+    if height:
+        vs = Gtk.PolicyType.ALWAYS
+    else:
+        vs = Gtk.PolicyType.NEVER
     window.set_policy(
-        hscrollbar_policy=Gtk.PolicyType.NEVER,
-        vscrollbar_policy=Gtk.PolicyType.ALWAYS
+        hscrollbar_policy=hs,
+        vscrollbar_policy=vs
     )
     if style:
         window.get_style_context().add_class(style)

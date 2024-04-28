@@ -83,7 +83,7 @@ separator {
 
 .heading {
 	font-size: 24px;
-	/* padding-bottom: 20px; */
+	padding: 0px 10px;
 	background: @gray;
 	border-radius: 10px;
 	border: 1px solid @gray;
