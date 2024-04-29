@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -u
 """
-Description: Template widget
+Description: Git widget
 Author: thnikk
 """
 import re
@@ -102,10 +102,9 @@ def parse_args() -> argparse.ArgumentParser:
     return parser.parse_args()
 
 
-def test_widget(repo):
-    """ test """
+def git_widget(repo):
+    """ Git widget """
     git = Git(os.path.expanduser(repo))
-    # git.fetch()
     commits = git.commits()
 
     main_box = c.box('v', style='widget', spacing=20)
@@ -149,10 +148,10 @@ def test_widget(repo):
 
 
 def main():
-    """ Template widget """
+    """ Main function """
     args = parse_args()
     widget = Widget(args.output, args.position)
-    widget.window.add(test_widget(args.repo))
+    widget.window.add(git_widget(args.repo))
     widget.start()
 
 
