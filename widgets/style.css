@@ -35,7 +35,7 @@ slider { background: none; border: none; }
 	/* min-width: 400px; */
 }
 
-.wide { min-width: 400px; }
+.wide { min-width: 500px; }
 
 separator {
 	color: @gray;

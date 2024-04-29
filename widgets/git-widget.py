@@ -119,7 +119,9 @@ def git_widget(repo):
         commit_box = c.box('v', style='box')
 
         title_box = c.box('h', style='inner-box', spacing=20)
-        title_box.add(c.label(info['msg'], length=100, ha='start'))
+        title = c.label(info['msg'], length=100, ha='start')
+        title.props.tooltip_text = info['msg']
+        title_box.add(title)
         title_box.pack_end(c.label(info['date'], style='green'), 0, 0, 0)
         commit_box.add(title_box)
 
@@ -135,7 +137,6 @@ def git_widget(repo):
         bottom_box.pack_start(c.label(commit, style='blue'), 0, 0, 0)
         commit_box.add(bottom_box)
 
-        # main_box.add(c.label(info))
         scroll_holder.add(commit_box)
     if len(commits) > 5:
         scroll_box.add(scroll_holder)
