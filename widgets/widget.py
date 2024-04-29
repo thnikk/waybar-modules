@@ -13,10 +13,11 @@ from gi.repository import Gtk, Gdk, GtkLayerShell
 
 class Widget:
     """ Widget class"""
-    def __init__(self, monitor=None):
+    def __init__(self, monitor=None, position='right'):
         self.window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.window.get_style_context().add_class('window')
         self.monitor = monitor
+        self.position = position
         css_path = "/".join(__file__.split('/')[:-1]) + '/style.css'
         self.css(css_path)
 
@@ -37,10 +38,14 @@ class Widget:
         GtkLayerShell.init_for_window(self.window)
 
         GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.BOTTOM, 1)
-        GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.RIGHT, 1)
+        if self.position == 'right':
+            GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.RIGHT, 1)
+        if self.position == 'left':
+            GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.LEFT, 1)
 
         GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.BOTTOM, 10)
         GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.RIGHT, 10)
+        GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.LEFT, 10)
 
         GtkLayerShell.set_namespace(self.window, 'widget')
 
