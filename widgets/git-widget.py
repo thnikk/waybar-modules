@@ -109,6 +109,7 @@ def test_widget(repo):
     commits = git.commits()
 
     main_box = c.box('v', style='widget', spacing=20)
+    main_box.get_style_context().add_class('wide')
     main_box.add(c.label(git.name, style='heading'))
 
     commits_box = c.box('v', spacing=10)
@@ -119,7 +120,7 @@ def test_widget(repo):
         commit_box = c.box('v', style='box')
 
         title_box = c.box('h', style='inner-box', spacing=20)
-        title_box.add(c.label(info['msg'], length=72, ha='start'))
+        title_box.add(c.label(info['msg'], length=100, ha='start'))
         title_box.pack_end(c.label(info['date'], style='green'), 0, 0, 0)
         commit_box.add(title_box)
 
@@ -127,7 +128,7 @@ def test_widget(repo):
 
         file_box = c.box('v', style='inner-box')
         for file in info['files']:
-            file_box.add(c.label(file, length=72, ha='start'))
+            file_box.add(c.label(file, ha='start'))
         commit_box.add(file_box)
 
         bottom_box = c.box('h', style='inner-box')
@@ -139,9 +140,10 @@ def test_widget(repo):
         scroll_holder.add(commit_box)
     if len(commits) > 5:
         scroll_box.add(scroll_holder)
-        main_box.add(scroll_box)
+        commits_box.add(scroll_box)
     else:
-        main_box.add(scroll_holder)
+        commits_box.add(scroll_holder)
+    main_box.add(commits_box)
 
     return main_box
 

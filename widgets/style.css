@@ -13,6 +13,13 @@
 	color: @white;
 }
 
+scrollbar {
+	background: none;
+	border: none;
+}
+
+slider { background: none; border: none; }
+
 .window {
 	background: none;
 }
@@ -25,7 +32,10 @@
 	/* box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2); */
 	/* margin: 10px; */
 	font-size: 16px;
+	/* min-width: 400px; */
 }
+
+.wide { min-width: 400px; }
 
 separator {
 	color: @gray;
@@ -39,7 +49,7 @@ separator {
 	border-radius: 10px;
 }
 
-.hour-box, .day-box, .inner_box {
+.hour-box, .day-box, .inner_box, .inner-box {
 	padding: 10px 20px;
 	font-size: 16px;
 }
@@ -172,3 +182,9 @@ separator {
 .green { color: @green; }
 .blue { color: @blue; }
 .orange { color: @orange; }
+.red { color: @red; }
+.blue { color: @blue; }
+
+.red-bg { background: @red; border-radius: 10px; }
+
+.scroll-mask { border-radius: 10px; }
