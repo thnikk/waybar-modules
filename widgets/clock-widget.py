@@ -55,6 +55,7 @@ def parse_args() -> argparse.ArgumentParser:
     """ Parse arguments """
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output', type=str)
+    parser.add_argument('-p', '--position', type=str, default='right')
     return parser.parse_args()
 
 
@@ -186,7 +187,7 @@ def draw_events(now, events):
 def main():
     """ Weather widget """
     args = parse_args()
-    widget = Widget(args.output)
+    widget = Widget(args.output, args.position)
     css_path = "/".join(__file__.split('/')[:-1]) + '/style.css'
     widget.css(css_path)
     widget.add(calendar_widget())

@@ -15,6 +15,7 @@ def parse_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output', type=str)
     parser.add_argument('-g', '--game', type=str, default="genshin")
+    parser.add_argument('-p', '--position', type=str, default='right')
     return parser.parse_args()
 
 
@@ -107,7 +108,7 @@ def convert_list(info) -> list:
 def main():
     """ Weather widget """
     args = parse_args()
-    widget = Widget(args.output)
+    widget = Widget(args.output, args.position)
     widget.add(hoyo_widget(args.game))
     widget.start()
 
