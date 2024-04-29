@@ -7,7 +7,7 @@ from subprocess import Popen
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
-from gi.repository import Gtk, Gdk, GtkLayerShell
+from gi.repository import Gtk, Gdk, GtkLayerShell, Pango
 
 
 def scroll(width=0, height=0, style=None):
@@ -106,7 +106,10 @@ def button(input_text, style=None, url=None):
     return __button__
 
 
-def label(input_text, style=None, va=None, ha=None, he=False, wrap=None):
+def label(
+    input_text, style=None, va=None, ha=None, he=False, wrap=None,
+    length=None
+):
     """ Create label """
     text = Gtk.Label()
     text.set_text(f'{input_text}')
@@ -133,6 +136,10 @@ def label(input_text, style=None, va=None, ha=None, he=False, wrap=None):
     if isinstance(wrap, int):
         text.props.wrap = True
         text.set_max_width_chars(wrap)
+
+    if isinstance(length, int):
+        text.set_max_width_chars(length)
+        text.set_ellipsize(Pango.EllipsizeMode.END)
 
     return text
 
