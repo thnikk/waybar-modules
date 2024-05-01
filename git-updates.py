@@ -4,7 +4,7 @@ Description: Track updates from git repo
 Author: thnikk
 """
 import os
-from subprocess import run, CalledProcessError
+from subprocess import run, check_output, CalledProcessError
 import argparse
 import json
 import re
@@ -18,6 +18,15 @@ class Git:
     """ Git class """
     def __init__(self, path):
         self.path = path
+        self.name = self.get_name()
+
+    def get_name(self) -> str:
+        """ Get name of repo """
+        name = check_output(
+            ['git', '-C', os.path.expanduser(self.path),
+             'config', '--get', 'remote.origin.url']
+        ).decode().strip().split('/')[-1].split('.')[0].replace('-', ' ')
+        return name.capitalize()
 
     def fetch(self) -> None:
         """ Fetch """
@@ -113,7 +122,8 @@ def main():
     if commits:
         print(json.dumps({
             "text": f"{args.icon} {len(commits)}",
-            "tooltip": "\n".join(tooltip).strip()
+            "tooltip": "\n".join(tooltip).strip(),
+            "widget": {"name": git.name, "commits": commits}
         }))
     else:
         print(json.dumps({"text": ""}))

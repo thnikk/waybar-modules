@@ -173,6 +173,7 @@ def genshin_module(cache):
             f'{key}: {value}' for key, value in cache.items()
             if key not in ["Name", "Icon"]
     )
+    output['widget'] = cache
     return output
 
 
@@ -192,6 +193,7 @@ def hsr_module(cache):
             f'{key}: {value}' for key, value in cache.items()
             if key not in ["Name", "Icon"]
     )
+    output['widget'] = cache
     return output
 
 

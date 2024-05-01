@@ -1,3 +1,5 @@
 __pycache__/
 sales.py
 packages.py
+*test*
+.gitignore

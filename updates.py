@@ -132,6 +132,7 @@ def main() -> None:
     output = {
         "text": text,
         "tooltip": get_tooltip(package_managers),
+        "widget": package_managers
     }
     # Print for waybar
     print(json.dumps(output))

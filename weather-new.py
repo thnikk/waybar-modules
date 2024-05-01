@@ -395,6 +395,7 @@ def widget(om, index, hours, night) -> dict:
         'w', encoding='utf-8'
     ) as file:
         file.write(json.dumps(output, indent=4))
+    return output
 
 
 def main():
@@ -407,13 +408,12 @@ def main():
         om.weather.daily.sunrise > hour_now
         or hour_now > om.weather.daily.sunset) and args.n
 
-    widget(om, hour_now, args.f, args.n)
-
     print(json.dumps(
         {
             "text": f"{om.weather.hourly.icon(hour_now, night)} "
             f"{om.weather.hourly.temp(hour_now)}°F",
-            "tooltip": tooltip(om, hour_now, args.f)
+            "tooltip": tooltip(om, hour_now, args.f),
+            "widget": widget(om, hour_now, args.f, args.n)
         }
     ))
 

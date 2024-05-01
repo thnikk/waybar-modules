@@ -97,7 +97,17 @@ def main():
                 f"AC power: {ups.ac()}",
                 f"Charging: {ups.charging()}",
                 f"Battery full: {ups.full()}",
-            ])
+            ]),
+            "widget": {
+                "load_offset": ups.offset_watts(),
+                "runtime": ups.runtime(),
+                "load_watts": ups.load_watts(),
+                "load_percent": ups.load_percent(),
+                "battery": ups.battery_percent(),
+                "ac_power": ups.ac(),
+                "charging": ups.charging(),
+                "battery_full": ups.full()
+            }
         }
         if not ups.ac():
             output['class'] = 'red'
