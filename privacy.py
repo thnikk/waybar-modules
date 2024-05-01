@@ -116,6 +116,7 @@ def main():
             f'\n<span color="#8fa1be" font_size="16pt">{category}</span>')
         for prog in progs:
             tooltip.append(prog)
+    output['widget'] = categories
     output['tooltip'] = '\n'.join(tooltip).lstrip()
     print(json.dumps(output))
 
