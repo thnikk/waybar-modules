@@ -373,6 +373,7 @@ def widget(om, index, hours, night) -> dict:
         hourly_output.append({
             "icon": om.weather.hourly.icon(hour_index, night_hour),
             "description": om.weather.hourly.description(hour_index),
+            "humidity": om.weather.hourly.humidity(hour_index),
             "time": text,
             "temperature": om.weather.hourly.temp(hour_index)
         })
