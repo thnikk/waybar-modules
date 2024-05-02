@@ -75,7 +75,7 @@ def get_categories(pw):
                 mtype = item['info']['props']['media.class'].split('/')[-1]
                 program = get_prop(
                     item['info']['props'],
-                    ['application.process.binary', 'node.name'])
+                    ['application.process.binary', 'node.name']).lower()
                 try:
                     running[mtype]
                 except KeyError:
