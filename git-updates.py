@@ -64,11 +64,20 @@ class Git:
                 ],
                 check=True, capture_output=True
             ).stdout.decode('utf-8')
-        except CalledProcessError as e:
-            lines = e.stderr.decode('utf-8').splitlines()
-            for line in lines:
-                print_debug(line)
-            sys.exit(1)
+        except CalledProcessError:
+            try:
+                command_output = run(
+                    [
+                        'git', '-C', os.path.expanduser(self.path), 'log',
+                        '--name-only', 'master..origin'
+                    ],
+                    check=True, capture_output=True
+                ).stdout.decode('utf-8')
+            except CalledProcessError as e:
+                lines = e.stderr.decode('utf-8').splitlines()
+                for line in lines:
+                    print_debug(line)
+                sys.exit(1)
         output = {}
         for line in command_output.splitlines():
             if re.match('^commit', line):
