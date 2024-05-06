@@ -56,7 +56,7 @@ class OpenMeteo():  # pylint: disable=too-few-public-methods
             data = cache.load()
             if str(zip_code) not in data['results'][0]['postcodes']:
                 raise ValueError("Updated postcode")
-            print_debug(f"Loading data from cache at {path}.")
+            # print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
             try:
                 print_debug("Fetching new geocode data.")
@@ -140,7 +140,7 @@ class Weather():  # pylint: disable=too-few-public-methods
             if (datetime.now() - mtime) > delta:
                 raise ValueError('old')
             data = cache.load()
-            print_debug(f"Loading data from cache at {path}.")
+            # print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
             try:
                 print_debug("Fetching new data.")
@@ -255,7 +255,7 @@ class Pollution():
             if (datetime.now() - mtime) > delta:
                 raise ValueError('old')
             data = cache.load()
-            print_debug(f"Loading data from cache at {path}.")
+            # print_debug(f"Loading data from cache at {path}.")
         except (FileNotFoundError, ValueError):
             try:
                 print_debug("Fetching new data.")
