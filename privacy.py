@@ -6,6 +6,7 @@ Author: thnikk
 from subprocess import run, CalledProcessError
 import json
 from glob import glob
+import os
 import sys
 from common import print_debug
 
@@ -45,12 +46,16 @@ def json_output(command):
     except CalledProcessError:
         print_debug('Not using pipewire, quitting.')
         sys.exit(1)
-    # Pipewire will occasionally return multiple JSON objects
-    # In this case, we split them and only return the first
-    if "]\n[" in output:
-        output = output.split(']\n[')[0] + "]"
-        return json.loads(output)
-    return json.loads(output)
+
+    cache_path = os.path.expanduser('~/.cache/privacy.json')
+    try:
+        cache = json.loads(output)
+        with open(cache_path, 'w', encoding='utf-8') as file:
+            file.write(output)
+        return cache
+    except json.decoder.JSONDecodeError:
+        with open(cache_path, 'r', encoding='utf-8') as file:
+            return json.loads(file.read())
 
 
 def get_prop(full_props, prop_list):
