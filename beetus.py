@@ -91,6 +91,13 @@ def main():
     out_dict = {
         "text": f" {sgv} {arrows[direction]}",
         "tooltip": f"{since_last} minute(s) ago\ndelta: {delta}",
+        "widget": {
+            "sgv": sgv,
+            "delta": delta,
+            "direction": arrows[direction],
+            "date": date.strftime("%m/%d/%y %H:%M:%S"),
+            "since_last": since_last
+        }
     }
 
     if sgv < 80:
