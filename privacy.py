@@ -6,7 +6,6 @@ Author: thnikk
 from subprocess import run, CalledProcessError
 import json
 from glob import glob
-import os
 import sys
 from common import print_debug
 
@@ -40,22 +39,22 @@ def get_webcams():
 def json_output(command):
     """ Get json for command output """
     try:
-        output = run(
+        command_output = run(
             command, capture_output=True, check=True
         ).stdout.decode('utf-8')
     except CalledProcessError:
         print_debug('Not using pipewire, quitting.')
         sys.exit(1)
 
-    cache_path = os.path.expanduser('~/.cache/privacy.json')
-    try:
-        cache = json.loads(output)
-        with open(cache_path, 'w', encoding='utf-8') as file:
-            file.write(output)
-        return cache
-    except json.decoder.JSONDecodeError:
-        with open(cache_path, 'r', encoding='utf-8') as file:
-            return json.loads(file.read())
+    if "]\n[" in command_output:
+        combined = "[\n" + "],\n[".join(command_output.split(']\n[')) + "\n]"
+        output = []
+        for item in json.loads(combined):
+            output += item
+    else:
+        output = command_output
+
+    return output
 
 
 def get_prop(full_props, prop_list):
