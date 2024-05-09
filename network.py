@@ -50,18 +50,16 @@ def main():
             print(json.dumps({"text": ""}))
         sys.exit(0)
 
-
     if connection_type and connection_ip:
         print(json.dumps({
             "text": icons[connection_type],
             "tooltip": f"{connection_type}\n{connection_ip}",
             "widget": {"Network": [
                 device for device in devices
-                # if '(connected)' in device['GENERAL.STATE']
             ]}
         }))
     else:
-        print(json.dumps({"text": " "}))
+        print(json.dumps({"text": ""}))
 
 
 if __name__ == "__main__":
